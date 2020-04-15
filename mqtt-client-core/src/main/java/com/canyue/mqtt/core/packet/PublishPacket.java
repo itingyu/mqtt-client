@@ -2,7 +2,9 @@ package com.canyue.mqtt.core.packet;
 
 
 import com.canyue.mqtt.core.Message;
-import com.canyue.mqtt.core.PacketParser;
+import com.canyue.mqtt.core.util.PacketUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.*;
 
@@ -42,12 +44,12 @@ public class PublishPacket extends BasePacket{
     }
 
     private int msgId =0;
-
+    private static Logger logger = LoggerFactory.getLogger(PublishPacket.class);
     public PublishPacket(byte flag, byte[] data) {
         ByteArrayInputStream bais = new ByteArrayInputStream(data);
         DataInputStream dis = new DataInputStream(bais);
         try {
-            String topic = PacketParser.decodeMQTTUTF8(dis);
+            String topic = PacketUtils.decodeMQTTUTF8(dis);
             this.message=new Message(topic);
             this.message.setQos((flag&0x06)>>1);
             this.message.setRetain((flag&0x01)==1?true:false);
@@ -66,18 +68,24 @@ public class PublishPacket extends BasePacket{
         } catch (IOException e) {
             e.printStackTrace();
         }
+        logger.debug("publish 报文解析完毕:" +
+                "\tmsgId:{}" +
+                "\tmessage:{};",msgId,message);
     }
     public PublishPacket(Message message){
         this.message=message;
         if(message.getQos()>0){
             msgId = message.getMsgId();
         }
+        logger.debug("publish 报文生成完毕:" +
+                "\tmsgId:{}," +
+                "\tmessage:{};",msgId,message);
     }
 
     public byte[] getVariableHeader() throws IOException {
         ByteArrayOutputStream baos=new ByteArrayOutputStream();
         DataOutputStream dos=new DataOutputStream(baos);
-        PacketParser.encodeMQTTUTF8(dos,message.getTopic());
+        PacketUtils.encodeMQTTUTF8(dos,message.getTopic());
         if(message.getQos()>0){
             dos.writeShort(msgId);
         }
@@ -101,13 +109,5 @@ public class PublishPacket extends BasePacket{
     }
     public PacketType getType() {
         return type;
-    }
-    @Override
-    public String toString() {
-        return "PublishPacket{" +
-                "type=" + type +
-                ", message=" + message +
-                ", msgId=" + msgId +
-                '}';
     }
 }

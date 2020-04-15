@@ -1,5 +1,8 @@
 package com.canyue.mqtt.core.packet;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -35,6 +38,7 @@ public class ConnectAckPacket extends BasePacket{
     public int getReturnCode() {
         return returnCode;
     }
+    private static Logger logger = LoggerFactory.getLogger(ConnectAckPacket.class);
 
     //连接确认报文  固定报头+variableHeader
     public ConnectAckPacket(byte[] variableHeader) throws IOException {
@@ -42,6 +46,10 @@ public class ConnectAckPacket extends BasePacket{
         DataInputStream dis = new DataInputStream(bais);
         this.sessionPresent = dis.readByte();
         this.returnCode = dis.readUnsignedByte();
+        logger.debug("connect ack报文解析完毕:\n" +
+                "\tsessionPresent:{}," +
+                "\treturnCode:{};",sessionPresent,returnCode);
+        
     }
 
     public byte[] getVariableHeader() throws IOException {
@@ -58,14 +66,5 @@ public class ConnectAckPacket extends BasePacket{
     
     public PacketType getType() {
         return type;
-    }
-    
-    @Override
-    public String toString() {
-        return "ConnectAckPacket{" +
-                "type=" + type +
-                ", sessionPresent=" + sessionPresent +
-                ", returnCode=" + returnCode +
-                '}';
     }
 }

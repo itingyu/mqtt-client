@@ -1,13 +1,17 @@
 package com.canyue.mqtt.core.packet;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 
 public class PingRespPacket extends BasePacket {
 	
 	private final static PacketType type = PacketType.PINGRESP_TYPE;
+	private static Logger logger = LoggerFactory.getLogger(PingRespPacket.class);
 	
 	public PingRespPacket(byte[] data) {
-		super();
+		logger.debug("ping resp 报文解析完毕！");
 	}
 	
 	public byte[] getVariableHeader() throws IOException {
@@ -24,10 +28,4 @@ public class PingRespPacket extends BasePacket {
 	public PacketType getType() {
 		return type;
 	}
-    @Override
-    public String toString() {
-        return "PingRespPacket{" +
-                "type=" + type +
-                '}';
-    }
 }

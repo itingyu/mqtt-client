@@ -1,5 +1,8 @@
 package com.canyue.mqtt.core.packet;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 
 /**
@@ -11,13 +14,13 @@ import java.io.IOException;
  */
 public class PingReqPacket extends BasePacket{
 	private final static PacketType type = PacketType.PINGREQ_TYPE;
-	
+	private static Logger logger= LoggerFactory.getLogger(PingReqPacket.class);
 	public PingReqPacket(byte[] data) {
 		super();
 	}
 	
 	public PingReqPacket() {
-	
+		logger.debug("ping req 报文生成完毕!");
 	}
 	
 	public byte[] getVariableHeader() throws IOException {
@@ -34,10 +37,4 @@ public class PingReqPacket extends BasePacket{
 	public PacketType getType() {
 		return type;
 	}
-    @Override
-    public String toString() {
-        return "PingReqPacket{" +
-                "type=" + type +
-                '}';
-    }
 }

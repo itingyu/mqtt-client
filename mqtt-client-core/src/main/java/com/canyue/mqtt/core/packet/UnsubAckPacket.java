@@ -1,5 +1,8 @@
 package com.canyue.mqtt.core.packet;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -15,7 +18,7 @@ import java.io.IOException;
 public class UnsubAckPacket extends BasePacket {
     
     private final static PacketType type = PacketType.UNSUBACK_TYPE;
-
+    private static Logger logger = LoggerFactory.getLogger(UnsubAckPacket.class);
     public UnsubAckPacket(byte[] data) {
         ByteArrayInputStream bais = new ByteArrayInputStream(data);
         DataInputStream dis = new DataInputStream(bais);
@@ -24,6 +27,8 @@ public class UnsubAckPacket extends BasePacket {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        logger.debug("unsubscribe ack报文解析完毕:" +
+                "\tmsgId:{};",msgId);
     }
     public int getMsgId() {
         return msgId;
@@ -48,12 +53,5 @@ public class UnsubAckPacket extends BasePacket {
     }
     public PacketType getType() {
         return type;
-    }
-    @Override
-    public String toString() {
-        return "UnsubAckPacket{" +
-                "type=" + type +
-                ", msgId=" + msgId +
-                '}';
     }
 }

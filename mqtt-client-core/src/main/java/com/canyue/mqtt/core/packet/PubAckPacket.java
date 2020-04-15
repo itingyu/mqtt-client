@@ -1,5 +1,8 @@
 package com.canyue.mqtt.core.packet;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -26,6 +29,7 @@ public class PubAckPacket extends BasePacket{
     }
 
     private int msgId;
+    private static Logger logger = LoggerFactory.getLogger(PubAckPacket.class);
     public PubAckPacket(byte[] data) {
         ByteArrayInputStream bais = new ByteArrayInputStream(data);
         DataInputStream dis = new DataInputStream(bais);
@@ -34,6 +38,8 @@ public class PubAckPacket extends BasePacket{
         } catch (IOException e) {
             e.printStackTrace();
         }
+        logger.debug("publish ack报文解析完毕:" +
+                "\tmsgId:{};",msgId);
     }
     public PubAckPacket(int msgId){
         this.msgId=msgId;
@@ -51,12 +57,5 @@ public class PubAckPacket extends BasePacket{
     }
     public PacketType getType() {
         return type;
-    }
-    @Override
-    public String toString() {
-        return "PubAckPacket{" +
-                "type=" + type +
-                ", msgId=" + msgId +
-                '}';
     }
 }

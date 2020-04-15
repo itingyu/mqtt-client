@@ -1,5 +1,8 @@
 package com.canyue.mqtt.core.packet;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -25,6 +28,7 @@ public class PubCompPacket extends BasePacket {
     }
 
     private int msgId;
+    private static Logger logger= LoggerFactory.getLogger(PubCompPacket.class);
     public PubCompPacket(byte[] data) {
         ByteArrayInputStream bais = new ByteArrayInputStream(data);
         DataInputStream dis = new DataInputStream(bais);
@@ -33,9 +37,13 @@ public class PubCompPacket extends BasePacket {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        logger.debug("publish comp报文解析完毕:" +
+                "\tmsgId:{}",msgId);
     }
     public PubCompPacket(int msgId){
         this.msgId=msgId;
+        logger.debug("publish comp报文生成完毕:" +
+                "\tmsgId:{};",msgId);
     }
     public byte[] getVariableHeader() throws IOException {
         return new byte[]{(byte)((msgId>>8)&0xff),(byte)((msgId>>0)&0xff)};
@@ -51,11 +59,5 @@ public class PubCompPacket extends BasePacket {
     public PacketType getType() {
         return type;
     }
-    @Override
-    public String toString() {
-        return "PubCompPacket{" +
-                "type=" + type +
-                ", msgId=" + msgId +
-                '}';
-    }
+   
 }

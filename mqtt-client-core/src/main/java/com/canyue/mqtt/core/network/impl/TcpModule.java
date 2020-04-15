@@ -1,6 +1,8 @@
 package com.canyue.mqtt.core.network.impl;
 
 import com.canyue.mqtt.core.network.INetworkModule;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -23,7 +25,7 @@ public class TcpModule implements INetworkModule {
 		this.host=host;
 		this.port=port;
 	}
-	
+	private static Logger logger= LoggerFactory.getLogger(TcpModule.class);
 	public void start() throws IOException {
 		
 		SocketAddress address=new InetSocketAddress(host,port);
@@ -31,7 +33,7 @@ public class TcpModule implements INetworkModule {
 		socket.connect(address,timeout*1000);
 		//设置一次读取的最大时长
 		//socket.setSoTimeout(1000);
-		System.out.println("本地socket："+ socket.getLocalSocketAddress());
+		logger.info("本地socket：{}",socket.getLocalSocketAddress());
 	}
 	
 	public void stop() throws IOException {

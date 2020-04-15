@@ -2,7 +2,9 @@ package com.canyue.mqtt.core.packet;
 
 
 import com.canyue.mqtt.core.Message;
-import com.canyue.mqtt.core.PacketParser;
+import com.canyue.mqtt.core.util.PacketUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
@@ -54,6 +56,7 @@ public class ConnectPacket extends BasePacket {
     public ConnectPacket(byte[] data) {
     
     }
+    private static Logger logger = LoggerFactory.getLogger(ConnectPacket.class);
     //用于根据客户端的需求生成相应的connect报文
     public ConnectPacket(String clientId, Message willMessage, String userName, String password, boolean cleanSession, int keepAlive){
 
@@ -63,6 +66,13 @@ public class ConnectPacket extends BasePacket {
         this.userName=userName;
         this.password=password;
         this.willMessage=willMessage;
+        logger.debug("connect报文生成完毕：" +
+                "\tcleanSession:{}," +
+                "\tclientId:{}," +
+                "\tkeepAlive:{}," +
+                "\tusername:{}," +
+                "\tpassword:{}," +
+                "\twillMessage:{};",cleanSession,clientId,keepAlive,userName,password,willMessage);
     }
 
 
@@ -70,7 +80,7 @@ public class ConnectPacket extends BasePacket {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         DataOutputStream dos = new DataOutputStream(baos);
         byte connectFlags = 0;
-        PacketParser.encodeMQTTUTF8(dos,"MQTT");
+        PacketUtils.encodeMQTTUTF8(dos,"MQTT");
         dos.writeByte(4);
         if(cleanSession==true){
             connectFlags|=0x02;
@@ -96,16 +106,16 @@ public class ConnectPacket extends BasePacket {
     public byte[] getPayload() throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         DataOutputStream dos = new DataOutputStream(baos);
-        PacketParser.encodeMQTTUTF8(dos,clientId);
+        PacketUtils.encodeMQTTUTF8(dos,clientId);
         if(willMessage!=null){
-            PacketParser.encodeMQTTUTF8(dos,willMessage.getTopic());
+            PacketUtils.encodeMQTTUTF8(dos,willMessage.getTopic());
             dos.writeShort(willMessage.getPayload().length);
             dos.write(willMessage.getPayload());
         }
         if (userName!=null){
-            PacketParser.encodeMQTTUTF8(dos, userName);
+            PacketUtils.encodeMQTTUTF8(dos, userName);
             if (password != null&&password.length()>0) {
-                PacketParser.encodeMQTTUTF8(dos, password);
+                PacketUtils.encodeMQTTUTF8(dos, password);
             }
         }
         dos.flush();
@@ -117,18 +127,5 @@ public class ConnectPacket extends BasePacket {
     }
     public byte getFixHeaderFlag() {
         return 0;
-    }
-    
-    @Override
-    public String toString() {
-        return "ConnectPacket{" +
-                "type=" + type +
-                ", clientId='" + clientId + '\'' +
-                ", willMessage=" + willMessage +
-                ", userName='" + userName + '\'' +
-                ", password='" + password + '\'' +
-                ", cleanSession=" + cleanSession +
-                ", keepAlive=" + keepAlive +
-                '}';
     }
 }

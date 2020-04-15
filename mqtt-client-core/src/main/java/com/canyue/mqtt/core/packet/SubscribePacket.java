@@ -1,6 +1,8 @@
 package com.canyue.mqtt.core.packet;
 
-import com.canyue.mqtt.core.PacketParser;
+import com.canyue.mqtt.core.util.PacketUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
@@ -38,16 +40,20 @@ public class SubscribePacket extends BasePacket {
     }
 
     private int msgId;
-    
+    private static Logger logger= LoggerFactory.getLogger(SubscribePacket.class);
     public SubscribePacket(String[] topics,int[] requiredQos,int msgId){
         if(topics==null||requiredQos==null||topics.length!=requiredQos.length){
-            System.out.println("主题列表不合法");
-            throw new IllegalArgumentException("主题列表不合法");
+            logger.warn("主题列表不合法!");
+            throw new IllegalArgumentException("主题列表不合法!");
         }
         this.msgId=msgId;
         this.topics=topics;
         topicCount=topics.length;
         this.requiredQos=requiredQos;
+        logger.debug("subscribe报文生成完毕:" +
+                "\tmsgId:{}," +
+                "\ttopics:{}," +
+                "\trequiredQos:{};",msgId,Arrays.toString(topics),Arrays.toString(requiredQos));
     }
 
     public byte[] getVariableHeader() throws IOException {
@@ -59,7 +65,7 @@ public class SubscribePacket extends BasePacket {
         DataOutputStream dos = new DataOutputStream(baos);
         int index = 0;
         while (index<topics.length){
-            PacketParser.encodeMQTTUTF8(dos,topics[index]);
+            PacketUtils.encodeMQTTUTF8(dos,topics[index]);
             dos.writeByte(requiredQos[index]);
             index++;
         }
@@ -71,15 +77,5 @@ public class SubscribePacket extends BasePacket {
     }
     public PacketType getType() {
         return type;
-    }
-    @Override
-    public String toString() {
-        return "SubscribePacket{" +
-                "type=" + type +
-                ", topicCount=" + topicCount +
-                ", topics=" + Arrays.toString(topics) +
-                ", requiredQos=" + Arrays.toString(requiredQos) +
-                ", msgId=" + msgId +
-                '}';
     }
 }

@@ -1,4 +1,4 @@
-package com.canyue.mqtt.core.test;
+package test;
 
 import com.canyue.mqtt.core.ReceiverThread;
 import com.canyue.mqtt.core.SenderThread;

@@ -1,12 +1,14 @@
-package com.canyue.mqtt.core;
+package com.canyue.mqtt.core.util;
 
 import com.canyue.mqtt.core.packet.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.*;
 
-public class PacketParser {
+public class PacketUtils {
 	public static final int MAX_REMAINING_LENGTH = 268435455;
-	private PacketParser() {
+	private PacketUtils() {
 	
 	}
 	/**
@@ -14,6 +16,7 @@ public class PacketParser {
 	 * @param is
 	 * @return
 	 */
+	private static Logger logger  = LoggerFactory.getLogger(PacketUtils.class);
 	public static BasePacket acquirePacket(InputStream is) throws IOException {
 		DataInputStream dis = new DataInputStream(is);
 		int first = dis.readUnsignedByte();
@@ -42,14 +45,16 @@ public class PacketParser {
 			case 12:return new PingReqPacket(data);
 			case 13:return new PingRespPacket(data);
 			case 14:return new DisconnectPacket(data);
-			default:throw new IllegalStateException("broker发来未知类型消息");
+			default:logger.debug("broker发来未知类型消息!");
+				throw new IllegalStateException("broker发来未知类型消息!");
 		}
 	}
 	
 	
 	public static byte[] encodeRenmainingLength(int remLen){
 		if(remLen>MAX_REMAINING_LENGTH||remLen<0){
-			throw new IllegalArgumentException("非法的剩余长度");
+			logger.debug("非法的剩余长度!");
+			throw new IllegalArgumentException("非法的剩余长度!");
 		}
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		int count=0;//记录字节数
@@ -80,8 +85,10 @@ public class PacketParser {
 			base*=128;
 		}while((data&0x80)!=0);//最高位不为0，表示还有字节
 		
-		if(remLen>MAX_REMAINING_LENGTH||remLen<0)
-			throw new IllegalStateException("broker发来不合法长度");
+		if(remLen>MAX_REMAINING_LENGTH||remLen<0){
+			logger.debug("broker发来不合法长度的报文!");
+			throw new IllegalStateException("broker发来不合法长度的报文!");
+		}
 		return remLen;
 	}
 	

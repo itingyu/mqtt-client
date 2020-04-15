@@ -1,7 +1,11 @@
 package com.canyue.mqtt.core;
 
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.Serializable;
+import java.util.Arrays;
 
 public class Message implements Serializable {
     private String name = "message";
@@ -42,9 +46,10 @@ public class Message implements Serializable {
     public int getQos() {
         return qos;
     }
-
+    private static Logger logger = LoggerFactory.getLogger(Message.class);
     public void setQos(int qos) {
         if(qos>2||qos<0){
+           logger.warn("不合法的qos质量");
             throw new IllegalArgumentException("不合法的qos质量");
         }
         this.qos = qos;
@@ -65,15 +70,18 @@ public class Message implements Serializable {
     public void setPayload(byte[] msg) {
         this.payload = msg;
     }
-
+    
+    
     @Override
     public String toString() {
-        return "[name="+name +
-                "{qos=" + qos +
-                ", topic='" + topic + '\'' +
-                ", payload=" +'\'' +new String(payload) +'\''+
-                ", retain=" + retain +
-                (getQos()>0? (",msgId="+msgId):"")+
-                '}'+']';
+        return "{" +
+                "name:'" + name + '\'' +
+                ", qos:" + qos +
+                ", topic:'" + topic + '\'' +
+                ", payload:" + Arrays.toString(payload) +
+                ", retain:" + retain +
+                ", dup:" + dup +
+                ", msgId:" + msgId +
+                '}';
     }
 }

@@ -3,25 +3,31 @@ package com.canyue.mqtt.core.client.impl;
 import com.canyue.mqtt.core.Message;
 import com.canyue.mqtt.core.ReceiverThread;
 import com.canyue.mqtt.core.SenderThread;
+import com.canyue.mqtt.core.client.IMqttClient;
 import com.canyue.mqtt.core.network.INetworkModule;
 import com.canyue.mqtt.core.network.impl.TcpModule;
 import com.canyue.mqtt.core.packet.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-public class MqttClient {
+public class MqttClient implements IMqttClient {
     ConcurrentLinkedQueue<BasePacket> clq;
     INetworkModule tcp;
     ScheduledExecutorService scheduledThreadPool;
     private static int msgId=1;
+    private static Logger logger= LoggerFactory.getLogger(MqttClient.class);
     public void start(){
         Thread.currentThread().setName("MainThread");
         clq = new ConcurrentLinkedQueue();
         tcp = new TcpModule("127.0.0.1",1883);
+        logger.debug("正在与服务器{}建立连接。。。");
         scheduledThreadPool = Executors.newScheduledThreadPool(5);
         try {
             tcp.start();
@@ -43,6 +49,7 @@ public class MqttClient {
                     }
                 }
             },1,TimeUnit.SECONDS);
+            logger.info("连接已建立。。。");
             scheduledThreadPool.shutdown();
         } catch (IOException e) {
             e.printStackTrace();
@@ -56,35 +63,48 @@ public class MqttClient {
     public void publish(Message msg) throws IOException {
         msg.setMsgId(msgId);
         msgId++;
+        logger.debug("正在生成publish报文:" +
+                "\tmsgId:{};",msg);
         PublishPacket publishMsg = new PublishPacket(msg);
         clq.offer(publishMsg);
+        logger.info("msgId:{},publish报文已加入队列!",msgId);
     }
     public void unsubscribe(String[] topics) throws IOException {
+        logger.debug("正在生成unsubscribe报文:" +
+                "\tmsgId:{};",msgId);
         UnsubscribePacket mqttUnsubscribeMsg = new UnsubscribePacket(
                topics,
                 msgId);
         clq.offer(mqttUnsubscribeMsg);
+        logger.info("msgId:{},unsubscribe报文已加入队列!",msgId);
     }
     public void subscribe(String[] topics,int[] qosList) throws IOException {
+        logger.debug("正在生成unsubscribe报文!");
         SubscribePacket mqttSubscribeMsg=new SubscribePacket(
                 topics,
                 qosList,msgId);
         msgId++;
         clq.offer(mqttSubscribeMsg);
+        logger.info("msgId:{},subscribe报文已加入队列!",msgId);
     }
 
     public void disconnect() throws IOException {
+        logger.debug("正在生成disconnect报文!");
         BasePacket disconnectMsg = new DisconnectPacket();
         clq.offer(disconnectMsg);
+        logger.info("disconnect报文已加入队列!",msgId);
     }
     public void connect(String username,String password,String clientId,Message willMessage,int keepAlive,boolean cleanSession) throws IOException {
+        logger.debug("正在生成connect报文!");
         BasePacket mqttConnectMsg = new ConnectPacket(clientId
                 ,willMessage,username,password,cleanSession,keepAlive);
         //连接报文
         clq.offer(mqttConnectMsg);
+        logger.info("disconnect报文已加入队列!",msgId);
     }
     public void ping() throws IOException {
         BasePacket pingReq = new PingReqPacket();
        clq.offer(pingReq);
+       logger.debug("ping报文已加入队列");
     }
 }

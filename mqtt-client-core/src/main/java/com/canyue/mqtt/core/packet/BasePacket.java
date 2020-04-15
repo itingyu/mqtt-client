@@ -1,6 +1,6 @@
 package com.canyue.mqtt.core.packet;
 
-import com.canyue.mqtt.core.PacketParser;
+import com.canyue.mqtt.core.util.PacketUtils;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -20,7 +20,7 @@ public abstract class BasePacket {
 		byte byte1 = (byte) ((getFixHeaderFlag()&0x0f)^((getType().getValue()&0x0f)<<4));
 		baos.write(byte1);
 		byte[] variableHeader = getVariableHeader();
-		byte[] len = PacketParser.encodeRenmainingLength(variableHeader.length+getPayload().length);
+		byte[] len = PacketUtils.encodeRenmainingLength(variableHeader.length+getPayload().length);
 		baos.write(len);
 		baos.write(variableHeader);
 		return baos.toByteArray();

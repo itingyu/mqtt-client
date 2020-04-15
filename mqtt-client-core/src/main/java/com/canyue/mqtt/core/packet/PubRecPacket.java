@@ -1,5 +1,8 @@
 package com.canyue.mqtt.core.packet;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -16,6 +19,7 @@ import java.io.IOException;
 public class PubRecPacket extends BasePacket{
     
     private final static PacketType type = PacketType.PUBREC_TYPE;
+    private static Logger logger = LoggerFactory.getLogger(PubRecPacket.class);
 
     public PubRecPacket(byte[] data) {
         ByteArrayInputStream bais = new ByteArrayInputStream(data);
@@ -25,9 +29,13 @@ public class PubRecPacket extends BasePacket{
         } catch (IOException e) {
             e.printStackTrace();
         }
+        logger.debug("publish rec报文解析完毕:" +
+                "\tmsgId:{};",msgId);
     }
     public PubRecPacket(int msgId){
         this.msgId=msgId;
+        logger.debug("publish rec报文生成完毕:" +
+                "\tmsgId:{};",msgId);
     }
 
     public int getMsgId() {
@@ -53,12 +61,5 @@ public class PubRecPacket extends BasePacket{
     }
     public PacketType getType() {
         return type;
-    }
-    @Override
-    public String toString() {
-        return "PubRecPacket{" +
-                "type=" + type +
-                ", msgId=" + msgId +
-                '}';
     }
 }

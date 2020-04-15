@@ -1,5 +1,8 @@
 package com.canyue.mqtt.core.packet;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.*;
 import java.util.Arrays;
 
@@ -33,6 +36,7 @@ public class SubAckPacket extends BasePacket {
     }
 
     private int msgId;
+    private static Logger logger= LoggerFactory.getLogger(SubAckPacket.class);
     public SubAckPacket(byte[] data) {
         ByteArrayInputStream bais = new ByteArrayInputStream(data);
         DataInputStream dis = new DataInputStream(bais);
@@ -48,6 +52,9 @@ public class SubAckPacket extends BasePacket {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        logger.debug("subscribe ack报文解析完毕:" +
+                "\tmsgId:{}," +
+                "\treturnCodes:{};",msgId,Arrays.toString(returnCodes));
     }
 
     public byte[] getVariableHeader() throws IOException {
@@ -70,13 +77,5 @@ public class SubAckPacket extends BasePacket {
     }
     public PacketType getType() {
         return type;
-    }
-    @Override
-    public String toString() {
-        return "SubAckPacket{" +
-                "returnCodes=" + Arrays.toString(returnCodes) +
-                ", type=" + type +
-                ", msgId=" + msgId +
-                '}';
     }
 }

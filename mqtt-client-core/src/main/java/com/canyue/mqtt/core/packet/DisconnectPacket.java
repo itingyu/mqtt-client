@@ -6,18 +6,21 @@ package com.canyue.mqtt.core.packet;
  *              剩余长度 byte2  0x00
  */
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 
 public class DisconnectPacket extends BasePacket{
 	
 	private final static PacketType type = PacketType.DISCONNECT_TYPE;
-	
+	private static Logger logger= LoggerFactory.getLogger(DisconnectPacket.class);
 	public DisconnectPacket(byte[] data) {
 		super();
 	}
 	
 	public DisconnectPacket() {
-	
+		logger.debug("disconnect报文已生成!");
 	}
 	
 	public byte[] getVariableHeader() throws IOException {
@@ -35,10 +38,4 @@ public class DisconnectPacket extends BasePacket{
 	public PacketType getType() {
 		return type;
 	}
-    @Override
-    public String toString() {
-        return "DisconnectPacket{" +
-                "type=" + type +
-                '}';
-    }
 }

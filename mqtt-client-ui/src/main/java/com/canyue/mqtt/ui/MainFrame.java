@@ -15,11 +15,11 @@ public class MainFrame extends Application {
     }
 
     public void start(Stage primaryStage) throws Exception {
-        Parent root = FXMLLoader.load(getClass().getClassLoader().getResource("layout/main.fxml"));
+        Parent root = FXMLLoader.load(MainFrame.class.getClassLoader().getResource("layout/main.fxml"));
         Scene scene = new Scene(root);
         primaryStage.setScene(scene);
         primaryStage.setTitle("MQTT客户端测试工具1.0");
-        primaryStage.getIcons().add(new Image("images/mqtt.png"));
+        primaryStage.getIcons().add(new Image("img/mqtt.png"));
         primaryStage.show();
     }
 }
