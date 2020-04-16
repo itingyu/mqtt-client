@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.Cursor?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.RadioButton?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.ToggleGroup?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<VBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" xmlns="http://javafx.com/javafx/8.0.171"
+      xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.canyue.mqtt.ui.controller.MyController">
+   <children>
+      <HBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="30.0" prefWidth="869.0" style="-fx-background-color: #aaaaaa;">
+         <children>
+            <Label prefHeight="30.0" prefWidth="58.0" text="服务器:" />
+            <TextField id="tf_socket" alignment="CENTER" editable="false" focusTraversable="false" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" nodeOrientation="RIGHT_TO_LEFT" prefHeight="30.0" prefWidth="150.0" style="-fx-background-color: #aaaaaa;" text="127.0.0.1:1883">
+               <font>
+                  <Font name="System Bold" size="15.0" />
+               </font>
+               <cursor>
+                  <Cursor fx:constant="DEFAULT" />
+               </cursor></TextField>
+            <Button id="btn_connect" fx:id="btn_connect" mnemonicParsing="false" onAction="#connect" style="-fx-background-radius: 10; -fx-background-color: #888888;" text="连接">
+               <cursor>
+                  <Cursor fx:constant="HAND" />
+               </cursor></Button>
+            <Button id="btn_disconnect" fx:id="btn_disconnect" disable="true" mnemonicParsing="false" onAction="#disconnect" style="-fx-background-radius: 10; -fx-background-color: #888888;" text="断开">
+               <HBox.margin>
+                  <Insets left="10.0" />
+               </HBox.margin>
+               <cursor>
+                  <Cursor fx:constant="HAND" />
+               </cursor>
+            </Button>
+            <Button id="btn_settings" fx:id="btn_settings" mnemonicParsing="false" onAction="#settings" style="-fx-background-radius: 10; -fx-background-color: #888888;" text="设置">
+               <HBox.margin>
+                  <Insets left="20.0" />
+               </HBox.margin>
+               <cursor>
+                  <Cursor fx:constant="HAND" />
+               </cursor>
+            </Button>
+         </children>
+         <padding>
+            <Insets bottom="10.0" left="20.0" right="20.0" top="10.0" />
+         </padding>
+      </HBox>
+      <TabPane id="tabPane" fx:id="tabPane" disable="true" focusTraversable="false" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="616.0" prefWidth="820.0" tabClosingPolicy="UNAVAILABLE" tabMaxHeight="30.0" tabMaxWidth="100.0" tabMinHeight="30.0" tabMinWidth="100.0" VBox.vgrow="ALWAYS">
+        <tabs>
+          <Tab text="Publish">
+               <content>
+                  <VBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" style="-fx-background-color: #ffffff;">
+                     <children>
+                        <HBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="36.0" prefWidth="600.0" style="-fx-background-color: #dddddd;">
+                           <children>
+                              <Label prefHeight="35.0" prefWidth="47.0" text="主题:" />
+                              <TextField id="tf_topic_pub" fx:id="tf_topic_pub" alignment="CENTER" style="-fx-background-radius: 6;" text="/test/topicTest01">
+                                 <padding>
+                                    <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                                 </padding></TextField>
+                              <Button id="btn_publish" fx:id="btn_publish" mnemonicParsing="false" onAction="#publish" style="-fx-background-radius: 10; -fx-background-color: #888888;" text="发布" textAlignment="CENTER">
+                                 <HBox.margin>
+                                    <Insets left="50.0" />
+                                 </HBox.margin>
+                                 <cursor>
+                                    <Cursor fx:constant="HAND" />
+                                 </cursor></Button>
+                           </children>
+                           <padding>
+                              <Insets bottom="10.0" left="20.0" right="20.0" top="10.0" />
+                           </padding>
+                        </HBox>
+                        <HBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="39.0" prefWidth="600.0" style="-fx-background-color: #dddddd;">
+                           <children>
+                               <HBox spacing="20.0">
+                                   <RadioButton nodeOrientation="RIGHT_TO_LEFT" selected="true" text="Qos0">
+                                    <toggleGroup>
+                                       <ToggleGroup fx:id="tg_qos_pub" />
+                                    </toggleGroup></RadioButton>
+                                   <RadioButton nodeOrientation="RIGHT_TO_LEFT" text="Qos1" toggleGroup="$tg_qos_pub" />
+                                   <RadioButton nodeOrientation="RIGHT_TO_LEFT" text="Qos2" toggleGroup="$tg_qos_pub" />
+                                 <padding>
+                                    <Insets bottom="10.0" left="20.0" right="20.0" top="10.0" />
+                                 </padding>
+                               </HBox>
+                              <RadioButton id="rb_retained" fx:id="rb_retained" nodeOrientation="RIGHT_TO_LEFT" text="Retained">
+                                 <HBox.margin>
+                                    <Insets bottom="10.0" left="50.0" right="20.0" top="10.0" />
+                                 </HBox.margin>
+                              </RadioButton>
+                           </children>
+                        </HBox>
+                        <TextArea id="ta_msg_pub" fx:id="ta_msg_pub" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" promptText="这里输入要发布的消息。。。" style="-fx-background-color: #dddddd;" styleClass="-fx-border-radius: 2px;   -fx-background-radius: 2px;" VBox.vgrow="ALWAYS">
+                           <padding>
+                              <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                           </padding>
+                           <cursor>
+                              <Cursor fx:constant="DEFAULT" />
+                           </cursor></TextArea>
+                     </children>
+                  </VBox>
+               </content>
+          </Tab>
+          <Tab text="Subscribe">
+               <content>
+                  <VBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="200.0" prefWidth="100.0">
+                     <children>
+                        <HBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="34.0" prefWidth="600.0" style="-fx-background-color: #dddddd;">
+                           <children>
+                              <Label prefHeight="35.0" prefWidth="47.0" text="主题:" />
+                              <TextField id="tf_topic_sub" fx:id="tf_topic_sub" alignment="CENTER" style="-fx-background-radius: 6;" text="/test/topicTest01" />
+                              <Button id="btn_subscribe" mnemonicParsing="false" onAction="#subscribe" style="-fx-background-color: #888888; -fx-background-radius: 10;" text="订阅">
+                                 <HBox.margin>
+                                    <Insets left="50.0" />
+                                 </HBox.margin>
+                                 <cursor>
+                                    <Cursor fx:constant="HAND" />
+                                 </cursor></Button>
+                           </children>
+                           <padding>
+                              <Insets bottom="10.0" left="20.0" right="20.0" top="10.0" />
+                           </padding>
+                        </HBox>
+                        <HBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="35.0" prefWidth="600.0" spacing="20.0" style="-fx-background-color: #dddddd;">
+                            <children>
+                                 <RadioButton fx:id="rb_sub_qos0" nodeOrientation="RIGHT_TO_LEFT" selected="true" text="Qos0">
+                                 <toggleGroup>
+                                    <ToggleGroup fx:id="tg_qos_sub" />
+                                 </toggleGroup>
+                              </RadioButton>
+                                 <RadioButton fx:id="rb_sub_qos1" nodeOrientation="RIGHT_TO_LEFT" text="Qos1" toggleGroup="$tg_qos_sub" />
+                                 <RadioButton fx:id="rb_sub_qos2" nodeOrientation="RIGHT_TO_LEFT" text="Qos2" toggleGroup="$tg_qos_sub">
+                                 <HBox.margin>
+                                    <Insets />
+                                 </HBox.margin>
+                              </RadioButton>
+                            </children>
+                           <padding>
+                              <Insets bottom="10.0" left="20.0" right="20.0" top="10.0" />
+                           </padding>
+                        </HBox>
+                        <HBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="512.0" prefWidth="869.0" VBox.vgrow="ALWAYS">
+                           <children>
+                              <ListView id="lv_msg" fx:id="lv_msg" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" style="-fx-background-color: #eeeeee; -fx-background-radius: 20;" HBox.hgrow="ALWAYS">
+                                 <opaqueInsets>
+                                    <Insets />
+                                 </opaqueInsets></ListView>
+                              <TextArea id="ta_msg_recv" fx:id="ta_msg_recv" editable="false" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="485.0" prefWidth="358.0" promptText="这里会展示收到的消息。。。" style="-fx-background-color: #dddddd;" HBox.hgrow="ALWAYS">
+                                 <cursor>
+                                    <Cursor fx:constant="DEFAULT" />
+                                 </cursor>
+                                 <padding>
+                                    <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                                 </padding></TextArea>
+                           </children>
+                           <cursor>
+                              <Cursor fx:constant="DEFAULT" />
+                           </cursor>
+                           <opaqueInsets>
+                              <Insets />
+                           </opaqueInsets>
+                        </HBox>
+                     </children>
+                  </VBox>
+               </content>
+          </Tab>
+            <Tab text="History">
+              <content>
+                  <TextArea id="ta_history" fx:id="ta_history" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="575.0" prefWidth="869.0" promptText="日志信息。。。" style="-fx-background-color: #dddddd;">
+                     <padding>
+                        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                     </padding>
+                  </TextArea>
+              </content>
+            </Tab>
+        </tabs>
+         <VBox.margin>
+            <Insets />
+         </VBox.margin>
+      </TabPane>
+   </children>
+</VBox>
