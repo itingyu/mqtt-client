@@ -149,7 +149,7 @@
                         </HBox>
                         <HBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="512.0" prefWidth="869.0" VBox.vgrow="ALWAYS">
                            <children>
-                              <ListView id="lv_msgs" fx:id="lv_msgs" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" style="-fx-background-color: #eeeeee; -fx-background-radius: 20;" HBox.hgrow="ALWAYS">
+                              <ListView id="lv_msg" fx:id="lv_msg" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" style="-fx-background-color: #eeeeee; -fx-background-radius: 20;" HBox.hgrow="ALWAYS">
                                  <opaqueInsets>
                                     <Insets />
                                  </opaqueInsets></ListView>

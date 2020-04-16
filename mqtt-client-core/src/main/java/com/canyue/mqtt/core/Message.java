@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import java.io.Serializable;
 import java.util.Arrays;
 
+//mqtt消息内容
 public class Message implements Serializable {
     private String name = "message";
     private int qos =0;

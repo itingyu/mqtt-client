@@ -1,6 +1,8 @@
 package com.canyue.mqtt.core.client;
 
 import com.canyue.mqtt.core.Message;
+import com.canyue.mqtt.core.MessageShower;
+import com.canyue.mqtt.core.client.impl.MqttClient;
 
 import java.io.IOException;
 
@@ -12,4 +14,5 @@ public interface IMqttClient {
 	public void unsubscribe(String[] topics) throws IOException;
 	public void ping() throws IOException;
 	public void publish(Message msg) throws IOException;
+	public MqttClient setMessageShower(MessageShower messageShower);
 }

@@ -11,14 +11,16 @@ import java.io.InputStream;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class ReceiverThread implements Runnable{
-    IReciveMsgCallBack callBack = new ReciveMsgCallBackImpl();
+  
     private final ConcurrentLinkedQueue clq;
     private InputStream is;
     private BasePacket basePacket;
+    private MessageShower messageShower;
     private static Logger logger = LoggerFactory.getLogger(ReceiverThread.class);
-    public ReceiverThread(InputStream is, ConcurrentLinkedQueue clq){
+    public ReceiverThread(InputStream is, ConcurrentLinkedQueue clq,MessageShower messageShower){
         this.is = is;
         this.clq=clq;
+        this.messageShower = messageShower;
     }
 
     public void run() {
@@ -41,7 +43,9 @@ public class ReceiverThread implements Runnable{
         if(basePacket instanceof PublishPacket){
             logger.info("接收到一个publish报文,正在处理中....");
             Message msg = ((PublishPacket) basePacket).getMessage();
-            callBack.messageArrived(msg);
+            if(messageShower!=null){
+                messageShower.notifyListenerEvent(new MessageReceivedObject(msg));
+            }
             switch (msg.getQos()){
                 case 1:clq.offer(new PubAckPacket(msg.getMsgId()));
                 case 2:clq.offer(new PubRecPacket(msg.getMsgId()));

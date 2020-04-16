@@ -1,5 +1,6 @@
 package test;
 
+import com.canyue.mqtt.core.MessageShower;
 import com.canyue.mqtt.core.ReceiverThread;
 import com.canyue.mqtt.core.SenderThread;
 import com.canyue.mqtt.core.network.INetworkModule;
@@ -21,7 +22,7 @@ public class MqttTest {
         try {
             tcp.start();
             scheduledThreadPool.schedule(new SenderThread(tcp.getOutputStream(),clq),0,TimeUnit.SECONDS);
-            scheduledThreadPool.schedule(new ReceiverThread(tcp.getInputStream(),clq),0,TimeUnit.SECONDS);
+            scheduledThreadPool.schedule(new ReceiverThread(tcp.getInputStream(),clq,new MessageShower()),0,TimeUnit.SECONDS);
             scheduledThreadPool.shutdown();
         } catch (IOException e) {
             e.printStackTrace();
