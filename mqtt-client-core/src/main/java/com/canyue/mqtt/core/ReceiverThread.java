@@ -8,19 +8,19 @@ import org.slf4j.LoggerFactory;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class ReceiverThread implements Runnable{
   
-    private final ConcurrentLinkedQueue clq;
+    private  MessageQueue messageQueue;
     private InputStream is;
-    private BasePacket basePacket;
-    private MessageShower messageShower;
+
     private static Logger logger = LoggerFactory.getLogger(ReceiverThread.class);
-    public ReceiverThread(InputStream is, ConcurrentLinkedQueue clq,MessageShower messageShower){
+    public ReceiverThread(InputStream is){
         this.is = is;
-        this.clq=clq;
-        this.messageShower = messageShower;
+    }
+
+    public void setMessageQueue(MessageQueue messageQueue) {
+        this.messageQueue = messageQueue;
     }
 
     public void run() {
@@ -31,31 +31,11 @@ public class ReceiverThread implements Runnable{
         while (true){
             try {
                 basePacket = PacketUtils.acquirePacket(dis);
-                handleMsg(basePacket,clq);
-            } catch (IOException e) {
+                messageQueue.handleReceivedMsg(basePacket);
+            } catch (Exception e) {
                 e.printStackTrace();
                 break;
             }
         }
-    }
-
-    private void handleMsg(BasePacket basePacket, ConcurrentLinkedQueue clq) {
-        if(basePacket instanceof PublishPacket){
-            logger.info("接收到一个publish报文,正在处理中....");
-            Message msg = ((PublishPacket) basePacket).getMessage();
-            if(messageShower!=null){
-                messageShower.notifyListenerEvent(new MessageReceivedObject(msg));
-            }
-            switch (msg.getQos()){
-                case 1:clq.offer(new PubAckPacket(msg.getMsgId()));
-                case 2:clq.offer(new PubRecPacket(msg.getMsgId()));
-                default:break;
-            }
-        }else if(basePacket instanceof PubRecPacket){
-            clq.offer(new PubRelPacket(((PubRecPacket)basePacket).getMsgId()));
-        }else if(basePacket instanceof PubRelPacket){
-            clq.offer(new PubCompPacket(((PubRelPacket)basePacket).getMsgId()));
-        }
-        logger.info("收到一个{}报文,正在处理中。。。",basePacket.getType());
     }
 }

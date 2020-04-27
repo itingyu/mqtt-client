@@ -1,24 +1,26 @@
 package com.canyue.mqtt.ui.controller;
 
 import com.canyue.mqtt.core.Message;
-import com.canyue.mqtt.core.MessageReceivedObject;
 import com.canyue.mqtt.core.MessageShower;
+import com.canyue.mqtt.core.PacketReceived;
 import com.canyue.mqtt.core.client.impl.MqttClient;
-import com.canyue.mqtt.core.listener.MessageReceivedListener;
+import com.canyue.mqtt.core.exception.MqttStartFailedException;
+import com.canyue.mqtt.core.listener.PacketReceivedListener;
+import com.canyue.mqtt.core.packet.PublishPacket;
+import com.canyue.mqtt.core.persistence.impl.DefaultPersistence;
+import com.canyue.mqtt.core.persistence.impl.FilePersistence;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
-import javafx.scene.image.ImageView;
+
 import javafx.scene.layout.HBox;
 import javafx.util.Callback;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.net.MalformedURLException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -57,18 +59,16 @@ public class MyController {
     MessageShower messageShower = new MessageShower();
     public void connect(ActionEvent actionEvent) {
         logger.info("正在连接建立");
-        btn_connect.setDisable(true);
-        btn_disconnect.setDisable(false);
-        tabPane.setDisable(false);
-        btn_settings.setDisable(true);
         initLv_msg();
-        messageShower.setListener(new MessageReceivedListener() {
-            public void messageArrived(MessageReceivedObject messageReceivedObject) {
+        messageShower.setListener(new PacketReceivedListener() {
+            public void PacketArrived(PacketReceived packetReceived) {
                 //在子线程更新UI，不然会报java.lang.IllegalStateException: Not on FX application thread
                 Platform.runLater(new Runnable() {
                     @Override
                     public void run() {
-                        lv_msg.getItems().add((Message) messageReceivedObject.getSource());
+                        if(packetReceived.getSource() instanceof PublishPacket){
+                            lv_msg.getItems().add((((PublishPacket) packetReceived.getSource()).getMessage()));
+                        }
                     }
                 });
             }
@@ -77,26 +77,39 @@ public class MyController {
             client.setHost("127.0.0.1")
                     .setPort(1883)
                     .setMessageShower(messageShower)
+                    .setPersistence(new FilePersistence("C:\\Users\\ASUS\\Desktop\\dataDir"))
                     .start();
-            client.connect("canyue","123321","MyMqttClientTestTool",null,60,true);
+            client.connect("canyue","123321","MyMqttClientTestTool",null,20,true);
+            btn_connect.setDisable(true);
+            btn_disconnect.setDisable(false);
+            tabPane.setDisable(false);
+            btn_settings.setDisable(true);
             ta_history.appendText(sdf.format(new Date())+"INFO:  客户端(id:"+"MyMqttClientTestTool"+")连接到服务器\n");
-        } catch (IOException e) {
+        } catch (MqttStartFailedException e) {
             logger.error("连接失败:",e);
+        } catch (IOException e) {
+            logger.error("",e);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
     }
 
     public void disconnect(ActionEvent actionEvent){
-        logger.info("正在断开连接");
-        btn_disconnect.setDisable(true);
-        btn_connect.setDisable(false);
-        tabPane.setDisable(true);
-        btn_settings.setDisable(false);
+
         try {
             client.disconnect();
             ta_history.appendText(sdf.format(new Date())+"INFO: 断开连接\n");
+            logger.info("正在断开连接");
+            btn_disconnect.setDisable(true);
+            btn_connect.setDisable(false);
+            tabPane.setDisable(true);
+            btn_settings.setDisable(false);
+            lv_msg.getItems().removeAll();
         } catch (IOException e) {
            logger.error("断开连接失败：",e);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -119,6 +132,8 @@ public class MyController {
             logger.info("message:{},Qos:{}",msg,qos);
         } catch (IOException e) {
             logger.error("发布失败:",e);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -131,6 +146,8 @@ public class MyController {
             logger.info("topic:{},Qos:{}",tf_topic_sub.getText(),qos);
         } catch (IOException e) {
            logger.error("订阅失败:",e);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
     private int getQosFromTg(ToggleGroup tg){

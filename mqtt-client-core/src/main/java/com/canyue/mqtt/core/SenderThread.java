@@ -6,22 +6,32 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.concurrent.ConcurrentLinkedQueue;
+
 
 public class SenderThread implements Runnable{
-    private final ConcurrentLinkedQueue clq;
+    private  MessageQueue messageQueue;
+
+    public void setPingLock(Object pingLock) {
+        this.pingLock = pingLock;
+    }
+
+    private Object pingLock;
     private OutputStream os;
     private static Logger logger = LoggerFactory.getLogger(SenderThread.class);
-    public SenderThread(OutputStream os, ConcurrentLinkedQueue clq){
+    public SenderThread(OutputStream os){
         this.os=os;
-        this.clq=clq;
     }
+
+    public void setMessageQueue(MessageQueue messageQueue) {
+        this.messageQueue = messageQueue;
+    }
+
     public void run() {
         Thread.currentThread().setName("SenderThread");
         logger.debug("senderThread已启动!");
         try{
             while (true){
-                BasePacket m=(BasePacket) clq.poll();
+                BasePacket m=(BasePacket) messageQueue.getSend();
                 if(m!=null){
                     send(os, m);
                 }
@@ -33,10 +43,14 @@ public class SenderThread implements Runnable{
 
     public void send(OutputStream os, BasePacket msg) throws IOException {
         if(os!=null){
-            os.write(msg.getHeaders());
-            os.write(msg.getPayload());
-            os.flush();
+            synchronized (pingLock){
+                os.write(msg.getHeaders());
+                os.write(msg.getPayload());
+                os.flush();
+                pingLock.notify();
+            }
             logger.info("{}报文发送成功",msg.getType());
+
         }else {
             logger.warn("{}报文发送失败!",msg.getType());
           logger.warn("socket 已经被关闭了!");
