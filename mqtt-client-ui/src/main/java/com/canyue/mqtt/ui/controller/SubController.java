@@ -26,12 +26,12 @@ public class SubController  {
     private MqttClient client;
 
     public void subscribe(ActionEvent actionEvent) {
-        logger.info("subscribe clicked!");
+        logger.debug("subscribe clicked!");
         try {
             int qos =getQosFromTg(tg_qos_sub);
             client.subscribe(new String[]{tf_topic_sub.getText()},new int[]{qos});
             //ta_history.appendText(sdf.format(new Date())+"INFO: 订阅(Topic:"+tf_topic_sub.getText()+",Qos:"+qos+")\n");
-            logger.info("topic:{},Qos:{}",tf_topic_sub.getText(),qos);
+            logger.info("topic:{},Qos:{}\t消息订阅成功！",tf_topic_sub.getText(),qos);
         } catch (IOException e) {
             logger.error("订阅失败:",e);
         } catch (Exception e) {

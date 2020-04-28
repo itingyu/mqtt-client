@@ -58,18 +58,14 @@ public class MessageQueue {
             lock.notify();
         }
     }
-    public  BasePacket getSend(){
+    public  BasePacket getSend() throws InterruptedException {
         BasePacket packet=null;
        synchronized (lock){
            while(packet==null){
                if(!willSendQueue.isEmpty()){
                    packet= willSendQueue.pollFirst();
                }else {
-                   try {
-                       lock.wait();
-                   } catch (InterruptedException e) {
-                       e.printStackTrace();
-                   }
+                  lock.wait();
                }
            }
        }

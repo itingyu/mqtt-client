@@ -28,14 +28,19 @@ public class ReceiverThread implements Runnable{
         DataInputStream dis = new DataInputStream(is);
         BasePacket basePacket= null;
         Thread.currentThread().setName("ReceiverThread");
-        while (true){
-            try {
+        try {
+            while (true){
                 basePacket = PacketUtils.acquirePacket(dis);
                 messageQueue.handleReceivedMsg(basePacket);
-            } catch (Exception e) {
-                e.printStackTrace();
-                break;
             }
+        } catch (IOException e){
+            logger.error("io异常，读取消息失败!");
+        } catch (InterruptedException e) {
+           logger.error("ReceiverThread被中断！");
+        }catch (Exception e){
+            logger.error("ReceiverThread发生异常");
         }
+        logger.info("ReceiverThread已停止！");
     }
+
 }

@@ -26,9 +26,9 @@ public class PingThread implements Runnable{
     public void run() {
         long start,end;
         if(keepAlive!=0){
-            while (true){
-                synchronized (pingLock){
-                    try {
+            try {
+                while (true){
+                    synchronized (pingLock){
                         start=System.currentTimeMillis();
                         pingLock.wait(keepAlive*1000);
                         end=System.currentTimeMillis();
@@ -36,13 +36,15 @@ public class PingThread implements Runnable{
                             messageQueue.handleSendMsg(new PingReqPacket());
                             logger.debug("ping报文已加入队列");
                         }
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    } catch (Exception e) {
-                        e.printStackTrace();
                     }
                 }
+            } catch (InterruptedException e) {
+                logger.error("PingThread被中断了");
+            } catch (Exception e) {
+                logger.error("PingThread发生异常");
             }
+
         }
+        logger.info("PingThread已停止运行！");
     }
 }

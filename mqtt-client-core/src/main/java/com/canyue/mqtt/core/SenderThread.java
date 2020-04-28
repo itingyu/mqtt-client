@@ -37,8 +37,11 @@ public class SenderThread implements Runnable{
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("io异常，发送失败！");
+        } catch (InterruptedException e) {
+            logger.error("SenderThread被中断！");
         }
+        logger.debug("SenderThread已停止！");
     }
 
     public void send(OutputStream os, BasePacket msg) throws IOException {

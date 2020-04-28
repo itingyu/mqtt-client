@@ -11,14 +11,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 public class MqttClient implements IMqttClient {
     private MessageQueue messageQueue;
     private INetworkModule networkModule;
-    private ScheduledExecutorService scheduledThreadPool;
+    private ExecutorService executorService;
     private static int msgId=1;
     private static Logger logger= LoggerFactory.getLogger(MqttClient.class);
     private MessageShower messageShower;
@@ -39,7 +37,7 @@ public class MqttClient implements IMqttClient {
         Thread.currentThread().setName("MainThread");
         networkModule = new TcpModule(host,port);
         logger.debug("正在与服务器{}建立连接。。。");
-        scheduledThreadPool = Executors.newScheduledThreadPool(5);
+        executorService = Executors.newFixedThreadPool(3);
         try {
             networkModule.start();
             senderThread=new SenderThread(networkModule.getOutputStream());
@@ -115,9 +113,12 @@ public class MqttClient implements IMqttClient {
         logger.debug("正在生成disconnect报文!");
         DisconnectPacket disconnectPacket = new DisconnectPacket();
        messageQueue.handleSendMsg(disconnectPacket);
-        persistence.save("msgId",msgId);
-       persistence.close();
         logger.info("disconnect报文已加入队列!");
+        persistence.save("msgId",msgId);
+        persistence.close();
+        executorService.shutdownNow();
+        executorService.awaitTermination(2,TimeUnit.SECONDS);
+
     }
     public void connect(String username,String password,String clientId,Message willMessage,int keepAlive,boolean cleanSession) throws Exception {
         logger.debug("正在生成connect报文!");
@@ -136,11 +137,16 @@ public class MqttClient implements IMqttClient {
         pingThread.setMessageQueue(messageQueue);
         pingThread.setKeepAlive(keepAlive);
         try {
-            scheduledThreadPool.schedule(senderThread,0, TimeUnit.SECONDS);
-            scheduledThreadPool.schedule(receiverThread,0,TimeUnit.SECONDS);
-            scheduledThreadPool.schedule(pingThread,0,TimeUnit.SECONDS);
-            scheduledThreadPool.shutdown();
+
+//            senderFuture = scheduledThreadPool.scheduleAtFixedRate(senderThread, 0, TimeUnit.SECONDS);
+//            receiverFuture = scheduledThreadPool.schedule(receiverThread,0,TimeUnit.SECONDS);
+//            pingFuture = scheduledThreadPool.schedule(pingThread,0,TimeUnit.SECONDS);
+             executorService.submit(senderThread);
+             executorService.submit(receiverThread);
+             executorService.submit(pingThread);
         } catch (Exception e) {
+            executorService.shutdownNow();
+            executorService.awaitTermination(2,TimeUnit.SECONDS);
             try {
                 networkModule.stop();
             } catch (IOException ex) {

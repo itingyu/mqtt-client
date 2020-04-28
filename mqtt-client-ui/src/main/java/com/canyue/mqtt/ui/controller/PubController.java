@@ -27,7 +27,7 @@ public class PubController {
     private MqttClient client;
 
     public void publish(ActionEvent actionEvent) {
-        logger.info("publish clicked!");
+        logger.debug("publish clicked!");
         RadioButton rb = (RadioButton) tg_qos_pub.getSelectedToggle();
 
         Message msg = new Message(tf_topic_pub.getText());
@@ -38,7 +38,7 @@ public class PubController {
         //ta_history.appendText(sdf.format(new Date())+"INFO: 发布信息("+msg+")\n");
         try {
             client.publish(msg);
-            logger.info("message:{},Qos:{}",msg,qos);
+            logger.info("message:{},Qos:{}\t消息发布成功！",msg,qos);
         } catch (IOException e) {
             logger.error("发布失败:",e);
         } catch (Exception e) {

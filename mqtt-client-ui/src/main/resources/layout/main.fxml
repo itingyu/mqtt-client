@@ -4,10 +4,15 @@
 <?import javafx.scene.layout.*?>
 
 <?import javafx.geometry.Insets?>
+<?import java.net.URL?>
 <VBox xmlns="http://javafx.com/javafx"
       xmlns:fx="http://javafx.com/fxml"
+      styleClass="green-theme"
       fx:controller="com.canyue.mqtt.ui.controller.MainController"
       maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308">
+    <stylesheets>
+        <URL value="@/css/main.css"/>
+    </stylesheets>
     <children>
         <fx:include source="conn.fxml" fx:id="conn"/>
         <TabPane id="tabPane" fx:id="tabPane" disable="true" focusTraversable="false" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="616.0" prefWidth="820.0" tabClosingPolicy="UNAVAILABLE" tabMaxHeight="30.0" tabMaxWidth="100.0" tabMinHeight="30.0" tabMinWidth="100.0" VBox.vgrow="ALWAYS">

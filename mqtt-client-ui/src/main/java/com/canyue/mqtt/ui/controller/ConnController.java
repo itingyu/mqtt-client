@@ -41,7 +41,7 @@ public class ConnController  {
 
 
     public void connect(ActionEvent actionEvent) {
-        logger.info("正在连接建立");
+        logger.debug("正在连接建立");
         initLv_msg();
         messageShower.setListener(new PacketReceivedListener() {
             public void PacketArrived(PacketReceived packetReceived) {
@@ -67,6 +67,7 @@ public class ConnController  {
             btn_disconnect.setDisable(false);
             tabPane.setDisable(false);
             btn_settings.setDisable(true);
+            logger.debug("连接已建立");
             //ta_history.appendText(sdf.format(new Date())+"INFO:  客户端(id:"+"MyMqttClientTestTool"+")连接到服务器\n");
         } catch (MqttStartFailedException e) {
             logger.error("连接失败:",e);
@@ -79,14 +80,15 @@ public class ConnController  {
 
     public void disconnect(ActionEvent actionEvent) {
         try {
+            logger.debug("正在断开连接");
             client.disconnect();
             //ta_history.appendText(sdf.format(new Date())+"INFO: 断开连接\n");
-            logger.info("正在断开连接");
             btn_disconnect.setDisable(true);
             btn_connect.setDisable(false);
             tabPane.setDisable(true);
             btn_settings.setDisable(false);
             lv_msg.getItems().removeAll();
+            logger.info("连接已断开！");
         } catch (IOException e) {
             logger.error("断开连接失败：",e);
         } catch (Exception e) {
