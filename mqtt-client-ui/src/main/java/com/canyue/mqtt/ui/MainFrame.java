@@ -1,11 +1,14 @@
 package com.canyue.mqtt.ui;
 
 import javafx.application.Application;
+import javafx.application.Platform;
+import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 
 
 public class MainFrame extends Application {
@@ -21,5 +24,11 @@ public class MainFrame extends Application {
         primaryStage.setTitle("MQTT客户端测试工具1.0");
         primaryStage.getIcons().add(new Image("img/mqtt.png"));
         primaryStage.show();
+        primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
+            @Override
+            public void handle(WindowEvent event) {
+                Platform.exit();
+            }
+        });
     }
 }
