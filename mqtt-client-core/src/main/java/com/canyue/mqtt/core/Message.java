@@ -1,6 +1,8 @@
 package com.canyue.mqtt.core;
 
 
+import com.canyue.mqtt.core.exception.MqttIllegalArgumentException;
+import com.canyue.mqtt.core.util.TopicUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,7 +19,7 @@ public class Message implements Serializable {
     private boolean dup = false;
     private int msgId;
     public Message(String topic){
-        this.topic = topic;
+        this.topic=topic;
     }
 
     public int getMsgId() {
@@ -48,11 +50,7 @@ public class Message implements Serializable {
         return qos;
     }
     private static Logger logger = LoggerFactory.getLogger(Message.class);
-    public void setQos(int qos) {
-        if(qos>2||qos<0){
-           logger.warn("不合法的qos质量");
-            throw new IllegalArgumentException("不合法的qos质量");
-        }
+    public void setQos(int qos)  {
         this.qos = qos;
     }
 
@@ -60,7 +58,7 @@ public class Message implements Serializable {
         return topic;
     }
 
-    public void setTopic(String topic) {
+    public void setTopic(String topic)  {
         this.topic = topic;
     }
 
@@ -84,5 +82,12 @@ public class Message implements Serializable {
                 ", dup:" + dup +
                 ", msgId:" + msgId +
                 '}';
+    }
+
+    public static void main(String[] args) {
+        String str = "/test/topic/1";
+        String str2 = "/test//topic/1";
+        System.out.println(Arrays.toString(str.split("/")));
+        System.out.println(Arrays.toString(str2.split("/")));
     }
 }

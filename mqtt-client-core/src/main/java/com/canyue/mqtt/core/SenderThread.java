@@ -41,6 +41,7 @@ public class SenderThread implements Runnable{
         } catch (InterruptedException e) {
             logger.error("SenderThread被中断！");
         }
+        this.messageQueue.getClientCallback().shutdown();
         logger.debug("SenderThread已停止！");
     }
 

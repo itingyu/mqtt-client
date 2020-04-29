@@ -19,6 +19,7 @@ public class MainController {
     private HisController hisController;
 
     private MqttClient client = new MqttClient();
+    private boolean runState = false;
 
     @FXML
     private void initialize(){
@@ -36,5 +37,15 @@ public class MainController {
     }
     public ListView<Message> getListView(){
         return this.subController.getLv_msg();
+    }
+    public void close(){
+        if(runState){
+            this.connController.disconnect(null);
+            this.setRunState(false);
+        }
+    }
+
+    public void setRunState(boolean runState) {
+        this.runState = runState;
     }
 }

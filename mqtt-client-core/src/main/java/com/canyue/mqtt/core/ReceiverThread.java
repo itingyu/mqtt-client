@@ -1,5 +1,6 @@
 package com.canyue.mqtt.core;
 
+import com.canyue.mqtt.core.exception.MqttPersistenceException;
 import com.canyue.mqtt.core.packet.*;
 import com.canyue.mqtt.core.util.PacketUtils;
 import org.slf4j.Logger;
@@ -28,17 +29,18 @@ public class ReceiverThread implements Runnable{
         DataInputStream dis = new DataInputStream(is);
         BasePacket basePacket= null;
         Thread.currentThread().setName("ReceiverThread");
-        try {
-            while (true){
+        while (true){
+            try {
                 basePacket = PacketUtils.acquirePacket(dis);
                 messageQueue.handleReceivedMsg(basePacket);
+            }catch (MqttPersistenceException e){
+                logger.error("持久化消息时发生了异常",e);
+                break;
+            } catch (IOException e){
+                logger.error("io异常，读取消息失败!");
+                this.messageQueue.getClientCallback().shutdown();
+                break;
             }
-        } catch (IOException e){
-            logger.error("io异常，读取消息失败!");
-        } catch (InterruptedException e) {
-           logger.error("ReceiverThread被中断！");
-        }catch (Exception e){
-            logger.error("ReceiverThread发生异常");
         }
         logger.info("ReceiverThread已停止！");
     }

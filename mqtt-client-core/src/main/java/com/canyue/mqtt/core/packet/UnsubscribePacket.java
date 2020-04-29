@@ -21,7 +21,7 @@ import java.io.IOException;
  */
 public class UnsubscribePacket extends BasePacket {
     private final static PacketType type = PacketType.UNSUBSCRIBE_TYPE;
-    private String[] topics;
+    private String[] topicsFilters;
     
     public UnsubscribePacket(byte[] data) {
 		super();
@@ -37,12 +37,12 @@ public class UnsubscribePacket extends BasePacket {
 
     private int msgId;
     private static Logger logger= LoggerFactory.getLogger(UnsubscribePacket.class);
-    public UnsubscribePacket(String[] topics,int msgId){
-        if(topics==null){
+    public UnsubscribePacket(String[] topicsFilters,int msgId){
+        if(topicsFilters==null){
             logger.warn("主题列表不合法!");
             throw new IllegalArgumentException("主题列表不合法!");
         }
-        this.topics=topics;
+        this.topicsFilters=topicsFilters;
         this.msgId = msgId;
         logger.debug("unsubscribe 报文生成完毕:" +
                 "\tmsgId:{};",msgId);
@@ -54,8 +54,8 @@ public class UnsubscribePacket extends BasePacket {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         DataOutputStream dos = new DataOutputStream(baos);
         int index = 0;
-        while (index<topics.length){
-            PacketUtils.encodeMQTTUTF8(dos,topics[index]);
+        while (index<topicsFilters.length){
+            PacketUtils.encodeMQTTUTF8(dos,topicsFilters[index]);
             index++;
         }
         return baos.toByteArray();

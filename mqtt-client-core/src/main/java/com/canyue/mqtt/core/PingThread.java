@@ -1,5 +1,6 @@
 package com.canyue.mqtt.core;
 
+import com.canyue.mqtt.core.exception.MqttPersistenceException;
 import com.canyue.mqtt.core.packet.PingReqPacket;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,11 +41,12 @@ public class PingThread implements Runnable{
                 }
             } catch (InterruptedException e) {
                 logger.error("PingThread被中断了");
-            } catch (Exception e) {
-                logger.error("PingThread发生异常");
+            }  catch (MqttPersistenceException e) {
+                logger.error("持久化消息时发生异常",e);
+            }finally {
+                this.messageQueue.getClientCallback().shutdown();
             }
-
+            logger.info("PingThread已停止运行！");
         }
-        logger.info("PingThread已停止运行！");
     }
 }

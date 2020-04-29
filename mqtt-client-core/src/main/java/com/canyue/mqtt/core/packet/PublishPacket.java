@@ -23,7 +23,7 @@ import java.io.*;
  *                      该主题的所有保留消息。
  *             剩余长度;
  *      可变报头：
- *              主题名    mqtt-utf8
+ *              主题名    mqtt-utf8 不能包含通配符
  *              报文标识符(当Qos>0时)
  *      有效载荷
  *          要发布的消息，可以为0长度，长度=剩余长度-可变报头的长度
@@ -66,7 +66,7 @@ public class PublishPacket extends BasePacket{
             this.message.setPayload(payload);
 
         } catch (IOException e) {
-            e.printStackTrace();
+           logger.error("生成publish报文出现异常",e);
         }
         logger.debug("publish 报文解析完毕:" +
                 "\tmsgId:{}" +

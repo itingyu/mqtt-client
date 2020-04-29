@@ -1,14 +1,12 @@
 package com.canyue.mqtt.ui.controller;
 
-import com.canyue.mqtt.core.Message;
 import com.canyue.mqtt.core.client.impl.MqttClient;
+import com.canyue.mqtt.core.exception.MqttException;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
 
 public class PubController {
     @FXML
@@ -29,21 +27,15 @@ public class PubController {
     public void publish(ActionEvent actionEvent) {
         logger.debug("publish clicked!");
         RadioButton rb = (RadioButton) tg_qos_pub.getSelectedToggle();
-
-        Message msg = new Message(tf_topic_pub.getText());
-        msg.setPayload(ta_msg_pub.getText().getBytes());
-        msg.setRetain(rb_retained.isSelected());
-        int qos=getQosFromTg(tg_qos_pub);
-        msg.setQos(qos);
-        //ta_history.appendText(sdf.format(new Date())+"INFO: 发布信息("+msg+")\n");
-        try {
-            client.publish(msg);
-            logger.info("message:{},Qos:{}\t消息发布成功！",msg,qos);
-        } catch (IOException e) {
-            logger.error("发布失败:",e);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        int qos= getQosFromTg(tg_qos_pub);
+            //ta_history.appendText(sdf.format(new Date())+"INFO: 发布信息("+msg+")\n");
+            try {
+                //client.publish(msg);
+                client.publish(tf_topic_pub.getText(),ta_msg_pub.getText().getBytes(),qos,rb_retained.isSelected());
+                logger.info("message:{},Qos:{}\t消息发布成功！",qos);
+            } catch (MqttException e) {
+                logger.error("发布失败:",e);
+            }
     }
     private int getQosFromTg(ToggleGroup tg){
         return Integer.parseInt(((RadioButton) tg.getSelectedToggle()).getText().replace("Qos",""));

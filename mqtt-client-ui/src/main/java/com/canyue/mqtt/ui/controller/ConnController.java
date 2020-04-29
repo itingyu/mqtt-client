@@ -1,12 +1,14 @@
 package com.canyue.mqtt.ui.controller;
 
+import com.canyue.mqtt.core.EventSource.ClientStatusEventSource;
 import com.canyue.mqtt.core.Message;
-import com.canyue.mqtt.core.MessageShower;
-import com.canyue.mqtt.core.PacketReceived;
+import com.canyue.mqtt.core.EventSource.MessageEventSource;
 import com.canyue.mqtt.core.client.impl.MqttClient;
-import com.canyue.mqtt.core.exception.MqttStartFailedException;
-import com.canyue.mqtt.core.listener.PacketReceivedListener;
-import com.canyue.mqtt.core.packet.PublishPacket;
+import com.canyue.mqtt.core.event_object.ClientStatusEvent;
+import com.canyue.mqtt.core.event_object.MessageEvent;
+import com.canyue.mqtt.core.exception.MqttException;
+import com.canyue.mqtt.core.listener.ClientStatusListener;
+import com.canyue.mqtt.core.listener.MessageReceivedListener;
 import com.canyue.mqtt.core.persistence.impl.FilePersistence;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
@@ -17,7 +19,6 @@ import javafx.util.Callback;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.text.SimpleDateFormat;
 
@@ -32,7 +33,8 @@ public class ConnController  {
     private Button btn_settings;
 
     private static Logger logger = LoggerFactory.getLogger(ConnController.class);
-    private MessageShower messageShower = new MessageShower();
+    private MessageEventSource messageEventSource = new MessageEventSource();
+    private ClientStatusEventSource clientStatusEventSource = new ClientStatusEventSource();
     private SimpleDateFormat sdf = new SimpleDateFormat ("E yyyy-MM-dd hh:mm:ss a zzz");
     private MainController mainController;
     private MqttClient client;
@@ -43,38 +45,49 @@ public class ConnController  {
     public void connect(ActionEvent actionEvent) {
         logger.debug("正在连接建立");
         initLv_msg();
-        messageShower.setListener(new PacketReceivedListener() {
-            public void PacketArrived(PacketReceived packetReceived) {
+        messageEventSource.setListener(new MessageReceivedListener() {
+            public void MessageArrived(MessageEvent messageEvent) {
                 //在子线程更新UI，不然会报java.lang.IllegalStateException: Not on FX application thread
                 Platform.runLater(new Runnable() {
                     @Override
                     public void run() {
-                        if(packetReceived.getSource() instanceof PublishPacket){
-                            lv_msg.getItems().add((((PublishPacket) packetReceived.getSource()).getMessage()));
-                        }
+                        lv_msg.getItems().add(messageEvent.getMessage());
                     }
                 });
+            }
+        });
+        clientStatusEventSource.setListener(new ClientStatusListener() {
+            @Override
+            public void connectCompeted(ClientStatusEvent clientStatusEvent) {
+                btn_connect.setDisable(true);
+                btn_disconnect.setDisable(false);
+                tabPane.setDisable(false);
+                btn_settings.setDisable(true);
+            }
+
+            @Override
+            public void shutdown(ClientStatusEvent clientStatusEvent) {
+                btn_disconnect.setDisable(true);
+                btn_connect.setDisable(false);
+                tabPane.setDisable(true);
+                btn_settings.setDisable(false);
+                lv_msg.getItems().removeAll();
+                logger.info("连接已断开！");
             }
         });
         try {
             client.setHost("127.0.0.1")
                     .setPort(1883)
-                    .setMessageShower(messageShower)
+                    .setMessageEventSource(messageEventSource)
+                    .setClientStatusEventSource(clientStatusEventSource)
                     .setPersistence(new FilePersistence("C:\\Users\\ASUS\\Desktop\\dataDir"))
                     .start();
             client.connect("canyue","123321","MyMqttClientTestTool",null,20,true);
-            btn_connect.setDisable(true);
-            btn_disconnect.setDisable(false);
-            tabPane.setDisable(false);
-            btn_settings.setDisable(true);
             logger.debug("连接已建立");
+            this.mainController.setRunState(true);
             //ta_history.appendText(sdf.format(new Date())+"INFO:  客户端(id:"+"MyMqttClientTestTool"+")连接到服务器\n");
-        } catch (MqttStartFailedException e) {
+        } catch (MqttException e) {
             logger.error("连接失败:",e);
-        } catch (IOException e) {
-            logger.error("",e);
-        } catch (Exception e) {
-            e.printStackTrace();
         }
     }
 
@@ -89,10 +102,8 @@ public class ConnController  {
             btn_settings.setDisable(false);
             lv_msg.getItems().removeAll();
             logger.info("连接已断开！");
-        } catch (IOException e) {
+        } catch (MqttException e) {
             logger.error("断开连接失败：",e);
-        } catch (Exception e) {
-            e.printStackTrace();
         }
     }
 
@@ -121,7 +132,6 @@ public class ConnController  {
                                 e.printStackTrace();
                             }
                             //Button bu = new Button(item.getMsgId()+"");
-
                             hBox.getChildren().addAll(topic,msgid_label,qos_label,payload_label);
                             this.setGraphic(hBox);
 

@@ -15,7 +15,7 @@
                 <HBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="34.0" prefWidth="600.0" style="-fx-background-color: #dddddd;">
                     <children>
                         <Label prefHeight="35.0" prefWidth="47.0" text="主题:" />
-                        <TextField id="tf_topic_sub" fx:id="tf_topic_sub" alignment="CENTER" style="-fx-background-radius: 6;" text="/test/topicTest01" />
+                        <TextField id="tf_topic_sub" fx:id="tf_topicsFilter_sub" alignment="CENTER" style="-fx-background-radius: 6;" text="/test/topicTest01" />
                         <Button id="btn_subscribe" mnemonicParsing="false" onAction="#subscribe" style="-fx-background-color: #888888; -fx-background-radius: 10;" text="订阅">
                             <HBox.margin>
                                 <Insets left="50.0" />

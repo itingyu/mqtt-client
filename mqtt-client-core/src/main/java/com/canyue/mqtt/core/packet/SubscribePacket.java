@@ -18,13 +18,13 @@ import java.util.Arrays;
  *          报文标识符（2字节）：非零16位，重发必须使用相同的报文标识符，
  *      有效载荷：
  *          主题过滤器列表：（至少包含一对）
- *                  主题名                 : MQTT-utf8编码
+ *                  主题过滤器                 : MQTT-utf8编码
  *                  服务质量要求（1字节）   : 没有用到高六位。如果Qos不等于0,1,2，则为不合法.
  */
 public class SubscribePacket extends BasePacket {
     private final static PacketType type = PacketType.SUBSCRIBE_TYPE;
     private int topicCount=0;
-    private String[] topics;
+    private String[] topicsFilters;
     private int[] requiredQos;
     
     public SubscribePacket(byte[] data) {
@@ -41,19 +41,19 @@ public class SubscribePacket extends BasePacket {
 
     private int msgId;
     private static Logger logger= LoggerFactory.getLogger(SubscribePacket.class);
-    public SubscribePacket(String[] topics,int[] requiredQos,int msgId){
-        if(topics==null||requiredQos==null||topics.length!=requiredQos.length){
-            logger.warn("主题列表不合法!");
-            throw new IllegalArgumentException("主题列表不合法!");
+    public SubscribePacket(String[] topicsFilters,int[] requiredQos,int msgId){
+        if(topicsFilters==null||requiredQos==null||topicsFilters.length!=requiredQos.length){
+            logger.warn("主题过滤器列表不合法!");
+            throw new IllegalArgumentException("主题过滤器列表不合法!");
         }
         this.msgId=msgId;
-        this.topics=topics;
-        topicCount=topics.length;
+        this.topicsFilters=topicsFilters;
+        topicCount=topicsFilters.length;
         this.requiredQos=requiredQos;
         logger.debug("subscribe报文生成完毕:" +
                 "\tmsgId:{}," +
-                "\ttopics:{}," +
-                "\trequiredQos:{};",msgId,Arrays.toString(topics),Arrays.toString(requiredQos));
+                "\ttopicsFilters:{}," +
+                "\trequiredQos:{};",msgId,Arrays.toString(topicsFilters),Arrays.toString(requiredQos));
     }
 
     public byte[] getVariableHeader() throws IOException {
@@ -64,8 +64,8 @@ public class SubscribePacket extends BasePacket {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         DataOutputStream dos = new DataOutputStream(baos);
         int index = 0;
-        while (index<topics.length){
-            PacketUtils.encodeMQTTUTF8(dos,topics[index]);
+        while (index<topicsFilters.length){
+            PacketUtils.encodeMQTTUTF8(dos,topicsFilters[index]);
             dos.writeByte(requiredQos[index]);
             index++;
         }

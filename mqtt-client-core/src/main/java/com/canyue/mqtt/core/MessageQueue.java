@@ -1,5 +1,11 @@
 package com.canyue.mqtt.core;
 
+import com.canyue.mqtt.core.EventSource.ClientStatusEventSource;
+import com.canyue.mqtt.core.EventSource.MessageEventSource;
+import com.canyue.mqtt.core.callback.ClientCallback;
+import com.canyue.mqtt.core.event_object.ClientStatusEvent;
+import com.canyue.mqtt.core.event_object.MessageEvent;
+import com.canyue.mqtt.core.exception.MqttPersistenceException;
 import com.canyue.mqtt.core.packet.*;
 import com.canyue.mqtt.core.persistence.IPersistence;
 import org.slf4j.Logger;
@@ -15,35 +21,16 @@ public class MessageQueue {
     private LinkedList<BasePacket> maybeReSendQueue=new LinkedList<BasePacket>();
     private ConnectConfig connectConfig;
     private final Object lock=new Object();
-    private MessageShower messageShower;
+    private MessageEventSource messageEventSource;
+    private ClientStatusEventSource clientStatusEventSource;
+    private ClientCallback clientCallback;
     private static Logger logger= LoggerFactory.getLogger(MessageQueue.class);
     private IPersistence persistence=null;
     private boolean connected=false;
 
-    public MessageQueue(IPersistence persistence ,ConnectConfig connectConfig) throws Exception {
+    public MessageQueue(IPersistence persistence ,ConnectConfig connectConfig){
         this.persistence=persistence;
        this.connectConfig = connectConfig;
-        if(connectConfig.isCleanSession()){
-            try {
-                persistence.clear();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-        try {
-            this.persistence.open(connectConfig.getClientId()+"");
-
-        } catch (Exception e) {
-            logger.error("persistence 打开异常!");
-            throw new Exception();
-        }
-        if(!connectConfig.isCleanSession()) {
-            List<BasePacket> list = this.persistence.getAllNeed2Retry();
-
-            for (BasePacket basePacket : list) {
-                this.addLast(basePacket);
-            }
-        }
     }
 
     public  void addLast(BasePacket packet){
@@ -73,7 +60,7 @@ public class MessageQueue {
     }
     //connect  subscribe unsubscribe ping disconnect
     ////publish publishRec publishRel publishComp publishAck
-    public void handleSendMsg(BasePacket basePacket) throws Exception {
+    public void handleSendMsg(BasePacket basePacket) throws MqttPersistenceException {
         if(basePacket instanceof PublishPacket){
             Message msg = ((PublishPacket) basePacket).getMessage();
 
@@ -99,14 +86,13 @@ public class MessageQueue {
     }
     //conAck subscribeAck unsubscribeAck pingResp
     //publish publishRec publishRel publishComp publishAck
-    public void handleReceivedMsg(BasePacket basePacket) throws Exception {
-        if(messageShower!=null){
-            messageShower.notifyListenerEvent(new PacketReceived(basePacket));
-        }
+    public void handleReceivedMsg(BasePacket basePacket) throws MqttPersistenceException {
         if(basePacket instanceof PublishPacket){
             logger.info("接收到一个publish报文,正在处理中....");
             Message msg = ((PublishPacket) basePacket).getMessage();
-
+            if(messageEventSource!=null){
+                messageEventSource.notifyListenerEvent(new MessageEvent(messageEventSource,msg));
+            }
             switch (msg.getQos()){
                 case 1:
                     addLast(new PubAckPacket(msg.getMsgId()));
@@ -131,12 +117,61 @@ public class MessageQueue {
         }else if(basePacket instanceof PubAckPacket){
             persistence.remove(((PubAckPacket) basePacket).getMsgId()+".p");
         }else if(basePacket instanceof ConnectAckPacket){
-            connected=true;
+            int returnCode = ((ConnectAckPacket) basePacket).getReturnCode();
+            if(returnCode==0){
+                connected=true;
+                this.clientCallback.connectCompeted();
+                if(connectConfig.isCleanSession()){
+                    try {
+                        persistence.clear();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+                try {
+                    this.persistence.open(connectConfig.getClientId()+"");
+
+                } catch (MqttPersistenceException e) {
+                    throw new MqttPersistenceException("persistence 打开异常!",e);
+                }
+                if(!connectConfig.isCleanSession()) {
+                    List<BasePacket> list = this.persistence.getAllNeed2Retry();
+                    for (BasePacket bp : list) {
+                        this.addLast(bp);
+                    }
+                }
+            }else {
+                connected=false;
+                logger.info("连接失败,return code:{}",returnCode);
+                clientCallback.reconnect();
+            }
         }
         logger.info("收到一个{}报文,正在处理中。。。",basePacket.getType());
     }
 
-    public void setMessageShower(MessageShower messageShower) {
-        this.messageShower = messageShower;
+    public void setMessageEventSource(MessageEventSource messageEventSource) {
+        this.messageEventSource = messageEventSource;
+    }
+
+    public ClientCallback getClientCallback() {
+        return clientCallback;
+    }
+
+    public void setClientCallback(ClientCallback clientCallback) {
+        this.clientCallback = clientCallback;
+    }
+
+    public void setClientStatusEventSource(ClientStatusEventSource clientStatusEventSource) {
+        this.clientStatusEventSource = clientStatusEventSource;
+    }
+    public void shutdown(){
+        if(clientStatusEventSource!=null){
+            clientStatusEventSource.notifyListenerEvent(new ClientStatusEvent(clientStatusEventSource,ClientStatusEvent.SHUTDOWN));
+        }
+    }
+    public void connectCompeted(){
+        if(clientStatusEventSource!=null){
+            clientStatusEventSource.notifyListenerEvent(new ClientStatusEvent(clientStatusEventSource,ClientStatusEvent.RUN));
+        }
     }
 }

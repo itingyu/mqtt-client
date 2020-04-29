@@ -2,6 +2,7 @@ package com.canyue.mqtt.ui.controller;
 
 import com.canyue.mqtt.core.Message;
 import com.canyue.mqtt.core.client.impl.MqttClient;
+import com.canyue.mqtt.core.exception.MqttException;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
@@ -12,7 +13,7 @@ import java.io.IOException;
 
 public class SubController  {
     @FXML
-    private TextField tf_topic_sub;
+    private TextField tf_topicsFilter_sub;
     @FXML
     private Button btn_subscribe;
     @FXML
@@ -29,13 +30,11 @@ public class SubController  {
         logger.debug("subscribe clicked!");
         try {
             int qos =getQosFromTg(tg_qos_sub);
-            client.subscribe(new String[]{tf_topic_sub.getText()},new int[]{qos});
-            //ta_history.appendText(sdf.format(new Date())+"INFO: 订阅(Topic:"+tf_topic_sub.getText()+",Qos:"+qos+")\n");
-            logger.info("topic:{},Qos:{}\t消息订阅成功！",tf_topic_sub.getText(),qos);
-        } catch (IOException e) {
+            client.subscribe(new String[]{tf_topicsFilter_sub.getText()},new int[]{qos});
+            //ta_history.appendText(sdf.format(new Date())+"INFO: 订阅(Topic:"+tf_topicsFilter_sub.getText()+",Qos:"+qos+")\n");
+            logger.info("topicsFilters:{},Qos:{}\t消息订阅成功！",tf_topicsFilter_sub.getText(),qos);
+        } catch (MqttException e) {
             logger.error("订阅失败:",e);
-        } catch (Exception e) {
-            e.printStackTrace();
         }
     }
 

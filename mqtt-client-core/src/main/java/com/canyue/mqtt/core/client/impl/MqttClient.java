@@ -1,12 +1,19 @@
 package com.canyue.mqtt.core.client.impl;
 
 import com.canyue.mqtt.core.*;
+import com.canyue.mqtt.core.EventSource.ClientStatusEventSource;
+import com.canyue.mqtt.core.EventSource.MessageEventSource;
+import com.canyue.mqtt.core.callback.ClientCallback;
 import com.canyue.mqtt.core.client.IMqttClient;
+import com.canyue.mqtt.core.exception.MqttException;
+import com.canyue.mqtt.core.exception.MqttIllegalArgumentException;
+import com.canyue.mqtt.core.exception.MqttPersistenceException;
 import com.canyue.mqtt.core.exception.MqttStartFailedException;
 import com.canyue.mqtt.core.network.INetworkModule;
 import com.canyue.mqtt.core.network.impl.TcpModule;
 import com.canyue.mqtt.core.packet.*;
 import com.canyue.mqtt.core.persistence.IPersistence;
+import com.canyue.mqtt.core.util.TopicUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,7 +26,8 @@ public class MqttClient implements IMqttClient {
     private ExecutorService executorService;
     private static int msgId=1;
     private static Logger logger= LoggerFactory.getLogger(MqttClient.class);
-    private MessageShower messageShower;
+    private MessageEventSource messageEventSource;
+    private ClientStatusEventSource clientStatusEventSource;
     private String host="127.0.0.1";
     private int port=1883;
     private SenderThread senderThread ;
@@ -27,6 +35,10 @@ public class MqttClient implements IMqttClient {
     private PingThread pingThread;
     private IPersistence persistence;
     private Object pingLock=new Object();
+    private ConnectConfig connectConfig;
+    private int max_reconnect_times = 5;
+    private int reconnect_count=0;
+    private boolean runState = false;
 
     private synchronized static int getMsgId() {
         msgId++;
@@ -37,7 +49,6 @@ public class MqttClient implements IMqttClient {
         Thread.currentThread().setName("MainThread");
         networkModule = new TcpModule(host,port);
         logger.debug("正在与服务器{}建立连接。。。");
-        executorService = Executors.newFixedThreadPool(3);
         try {
             networkModule.start();
             senderThread=new SenderThread(networkModule.getOutputStream());
@@ -53,24 +64,14 @@ public class MqttClient implements IMqttClient {
             } catch (IOException ex) {
                 ex.printStackTrace();
             }
-            logger.error("socket连接异常",e);
-            throw new MqttStartFailedException("socket启动失败");
+            logger.error("socket连接异常,请检查你的网络配置");
+            throw new MqttStartFailedException("socket启动失败",e);
         }
-    }
-    public void publish(Message msg) throws Exception {
-        if(msg.getQos()>0){
-            msg.setMsgId(getMsgId());
-        }
-        logger.debug("正在生成publish报文:" +
-                "\tQos:{}"+
-                "\tmsgId:{};",msg.getQos(),msg.getMsgId());
-        PublishPacket publishMsg = new PublishPacket(msg);
-        messageQueue.handleSendMsg(publishMsg);
-        logger.info("msgId:{},publish报文已加入队列!",msg.getMsgId());
     }
 
-    public MqttClient setMessageShower(MessageShower messageShower) {
-        this.messageShower=messageShower;
+
+    public MqttClient setMessageEventSource(MessageEventSource messageEventSource) {
+        this.messageEventSource=messageEventSource;
         return this;
     }
     public MqttClient setHost(String host){
@@ -89,40 +90,50 @@ public class MqttClient implements IMqttClient {
         this.persistence=persistence;
         return this;
     }
-    public void unsubscribe(String[] topics) throws Exception {
+    public void unsubscribe(String[] topicsFilters) throws MqttException {
+        for(int i=0;i<topicsFilters.length;i++){
+            TopicUtils.validateTopicFilter(topicsFilters[i]);
+        }
         int msgId=getMsgId();
         logger.debug("正在生成unsubscribe报文:" +
                 "\tmsgId:{};",msgId);
         UnsubscribePacket unsubscribePacket = new UnsubscribePacket(
-               topics,msgId
+                topicsFilters,msgId
                 );
       messageQueue.handleSendMsg(unsubscribePacket);
         logger.info("msgId:{},unsubscribe报文已加入队列!",msgId);
     }
-    public void subscribe(String[] topics,int[] qosList) throws Exception {
+    public void subscribe(String[] topicsFilters,int[] qosList) throws MqttException {
+        for(int i=0;i<topicsFilters.length;i++){
+            TopicUtils.validateTopicFilter(topicsFilters[i]);
+        }
         int msgId=getMsgId();
         logger.debug("正在生成unsubscribe报文!");
         SubscribePacket subscribePacket=new SubscribePacket(
-                topics,
+                topicsFilters,
                 qosList,msgId);
        messageQueue.handleSendMsg(subscribePacket);
         logger.info("msgId:{},subscribe报文已加入队列!",msgId);
     }
 
-    public void disconnect() throws Exception {
+    public void disconnect() throws MqttException {
         logger.debug("正在生成disconnect报文!");
         DisconnectPacket disconnectPacket = new DisconnectPacket();
-       messageQueue.handleSendMsg(disconnectPacket);
+        messageQueue.handleSendMsg(disconnectPacket);
         logger.info("disconnect报文已加入队列!");
         persistence.save("msgId",msgId);
         persistence.close();
         executorService.shutdownNow();
-        executorService.awaitTermination(2,TimeUnit.SECONDS);
+        try {
+            executorService.awaitTermination(2,TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            throw new MqttException(e);
+        }
 
     }
-    public void connect(String username,String password,String clientId,Message willMessage,int keepAlive,boolean cleanSession) throws Exception {
+    public void connect(String username,String password,String clientId,Message willMessage,int keepAlive,boolean cleanSession) throws MqttException {
         logger.debug("正在生成connect报文!");
-        ConnectConfig connectConfig=new ConnectConfig(clientId,willMessage,username,password,cleanSession,keepAlive);
+        connectConfig=new ConnectConfig(clientId,willMessage,username,password,cleanSession,keepAlive);
         ConnectPacket connectPacket = new ConnectPacket(clientId
                 ,willMessage,username,password,cleanSession,keepAlive);
         //连接报文
@@ -131,31 +142,115 @@ public class MqttClient implements IMqttClient {
             msgId= (int) o;
         }
         messageQueue=new MessageQueue(persistence,connectConfig);
-        messageQueue.setMessageShower(messageShower);
+        messageQueue.setClientCallback(new ClientCallbackImpl(this.messageQueue));
+
+        messageQueue.setMessageEventSource(messageEventSource);
+        messageQueue.setClientStatusEventSource(clientStatusEventSource);
+
         senderThread.setMessageQueue(messageQueue);
         receiverThread.setMessageQueue(messageQueue);
         pingThread.setMessageQueue(messageQueue);
         pingThread.setKeepAlive(keepAlive);
-        try {
 
-//            senderFuture = scheduledThreadPool.scheduleAtFixedRate(senderThread, 0, TimeUnit.SECONDS);
-//            receiverFuture = scheduledThreadPool.schedule(receiverThread,0,TimeUnit.SECONDS);
-//            pingFuture = scheduledThreadPool.schedule(pingThread,0,TimeUnit.SECONDS);
-             executorService.submit(senderThread);
-             executorService.submit(receiverThread);
-             executorService.submit(pingThread);
-        } catch (Exception e) {
-            executorService.shutdownNow();
-            executorService.awaitTermination(2,TimeUnit.SECONDS);
-            try {
-                networkModule.stop();
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            }
-            logger.error("mqtt连接异常",e);
-            throw new Exception("mqtt连接异常");
-        }
+        executorService = Executors.newFixedThreadPool(3);
+        executorService.submit(senderThread);
+        executorService.submit(receiverThread);
+        executorService.submit(pingThread);
+
         messageQueue.handleSendMsg(connectPacket);
         logger.info("connect报文已加入队列!");
+    }
+    private void connect(ConnectConfig connectConfig) throws MqttException {
+        this.connect(connectConfig.getUserName(),connectConfig.getPassword(),connectConfig.getClientId(),connectConfig.getWillMessage(),connectConfig.getKeepAlive(),connectConfig.isCleanSession());
+    }
+
+    public void publish(String topicName, byte[] payload, int qos, boolean isRetain) throws MqttIllegalArgumentException, MqttPersistenceException {
+        TopicUtils.validateTopicName(topicName);
+        if(qos<0||qos>2){
+            throw new MqttIllegalArgumentException("不合法的消息服务质量!");
+        }
+        Message msg = new Message(topicName);
+        msg.setPayload(payload);
+        msg.setQos(qos);
+        msg.setRetain(isRetain);
+        if(qos>0){
+            msg.setMsgId(getMsgId());
+        }
+        logger.debug("正在生成publish报文:" +
+                "\tQos:{}"+
+                "\tmsgId:{};",msg.getQos(),msg.getMsgId());
+        PublishPacket publishMsg = new PublishPacket(msg);
+        messageQueue.handleSendMsg(publishMsg);
+        logger.info("msgId:{},publish报文已加入队列!",msg.getMsgId());
+    }
+    class ClientCallbackImpl implements ClientCallback {
+        private MessageQueue messageQueue;
+        public ClientCallbackImpl(MessageQueue messageQueue) {
+            this.messageQueue=messageQueue;
+        }
+
+        @Override
+        public void connectCompeted() {
+            runState = true;
+            this.messageQueue.connectCompeted();
+            logger.info("连接成功!");
+        }
+
+        public void reconnect() {
+            if(reconnect_count<max_reconnect_times){
+                reconnect_count++;
+                try {
+
+                    persistence.close();
+                    executorService.shutdownNow();
+                    try {
+                        executorService.awaitTermination(2,TimeUnit.SECONDS);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    logger.info("3秒之后进行第{}次自动重连！",reconnect_count);
+                    Thread.sleep(3*1000);
+                    start();
+                    connect(connectConfig);
+                }catch (MqttException | InterruptedException e) {
+                    logger.error("第{}次自动重连失败",reconnect_count,e);
+                }
+            }else {
+                logger.info("重连失败，请检查你的连接配置参数！");
+                try {
+                    persistence.close();
+                } catch (MqttPersistenceException e) {
+                    e.printStackTrace();
+                }
+                executorService.shutdownNow();
+                try {
+                    executorService.awaitTermination(2,TimeUnit.SECONDS);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        public void shutdown() {
+            if(runState){
+                try {
+                    persistence.save("msgId",msgId);
+                    persistence.close();
+                } catch (MqttPersistenceException e) {
+                    logger.error("发生错误，未正常关闭，可能会丢失数据！");
+                }
+                executorService.shutdownNow();
+                try {
+                    executorService.awaitTermination(2,TimeUnit.SECONDS);
+                } catch (InterruptedException e) {
+                }
+                runState=false;
+                this.messageQueue.shutdown();
+            }
+        }
+    }
+
+    public MqttClient setClientStatusEventSource(ClientStatusEventSource clientStatusEventSource) {
+        this.clientStatusEventSource = clientStatusEventSource;
+        return this;
     }
 }

@@ -1,6 +1,7 @@
 package com.canyue.mqtt.core.persistence.impl;
 
 import com.canyue.mqtt.core.Message;
+import com.canyue.mqtt.core.exception.MqttPersistenceException;
 import com.canyue.mqtt.core.packet.*;
 import com.canyue.mqtt.core.persistence.IPersistence;
 import org.slf4j.Logger;
@@ -21,9 +22,9 @@ public class FilePersistence implements IPersistence {
     }
 
     @Override
-    public void open(String clientId) throws Exception {
+    public void open(String clientId) throws MqttPersistenceException {
         if(dataDir.exists()&&!dataDir.isDirectory()){
-            throw new IOException("不是目录但已存在!");
+            throw new MqttPersistenceException("不是目录但已存在!");
         }else if(!dataDir.exists()){
             dataDir.mkdirs();
         }
@@ -35,14 +36,14 @@ public class FilePersistence implements IPersistence {
     }
 
     @Override
-    public void close() throws Exception {
+    public void close() throws MqttPersistenceException {
         dataDir=null;
         workDir=null;
         logger.info("persistence已关闭");
     }
 
     @Override
-    public void clear() throws Exception {
+    public void clear() throws MqttPersistenceException {
 
         if(workDir!=null){
             File[] files = workDir.listFiles();
@@ -58,19 +59,19 @@ public class FilePersistence implements IPersistence {
     }
 
     @Override
-    public Object find(String filename) throws Exception {
+    public Object find(String filename) throws MqttPersistenceException {
         File file = new File(workDir,filename);
         ObjectInputStream objectInputStream = null;
         try {
             objectInputStream = new ObjectInputStream(new FileInputStream(file));
             return objectInputStream.readObject();
-        } catch (IOException e) {
+        } catch (IOException | ClassNotFoundException e) {
             return null;
         }
     }
 
     @Override
-    public List<BasePacket> getAllNeed2Retry() throws Exception {
+    public List<BasePacket> getAllNeed2Retry() throws MqttPersistenceException {
         ArrayList<BasePacket> al = new ArrayList<>();
         File[] files = workDir.listFiles();
         for (File file : files) {
@@ -91,16 +92,21 @@ public class FilePersistence implements IPersistence {
 
 
     @Override
-    public void save(String filename, Object o) throws Exception {
+    public void save(String filename, Object o) throws MqttPersistenceException {
         File file = new File(workDir,filename);
         logger.debug("{}已保存",filename);
-        ObjectOutputStream objectOutputStream = new ObjectOutputStream(new FileOutputStream(file));
-        objectOutputStream.writeObject(o);
-        objectOutputStream.close();
+        ObjectOutputStream objectOutputStream = null;
+        try {
+            objectOutputStream = new ObjectOutputStream(new FileOutputStream(file));
+            objectOutputStream.writeObject(o);
+            objectOutputStream.close();
+        } catch (IOException e) {
+           throw new MqttPersistenceException("save failed！",e);
+        }
     }
 
     @Override
-    public void remove(String filename) throws Exception {
+    public void remove(String filename) throws MqttPersistenceException {
         File file=new File(workDir,filename);
         if(file!=null){
             file.delete();
