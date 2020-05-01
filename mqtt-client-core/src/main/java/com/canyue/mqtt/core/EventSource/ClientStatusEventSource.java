@@ -2,12 +2,10 @@ package com.canyue.mqtt.core.EventSource;
 
 import com.canyue.mqtt.core.event_object.ClientStatusEvent;
 import com.canyue.mqtt.core.listener.ClientStatusListener;
-import com.canyue.mqtt.core.listener.impl.DefaultClientStatusListener;
 
-import java.awt.*;
 
 public class ClientStatusEventSource {
-    private ClientStatusListener listener = new DefaultClientStatusListener();
+    private ClientStatusListener listener ;
 
     public void setListener(ClientStatusListener listener) {
         this.listener = listener;

@@ -3,6 +3,7 @@ package com.canyue.mqtt.ui.controller;
 import com.canyue.mqtt.core.Message;
 import com.canyue.mqtt.core.client.impl.MqttClient;
 import com.canyue.mqtt.core.exception.MqttException;
+import com.canyue.mqtt.ui.DataHolder;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
@@ -24,13 +25,13 @@ public class SubController  {
     private TextArea ta_msg_recv;
     private MainController mainController;
     private static Logger logger = LoggerFactory.getLogger(SubController.class);
-    private MqttClient client;
+    private DataHolder dataHolder;
 
     public void subscribe(ActionEvent actionEvent) {
         logger.debug("subscribe clicked!");
         try {
             int qos =getQosFromTg(tg_qos_sub);
-            client.subscribe(new String[]{tf_topicsFilter_sub.getText()},new int[]{qos});
+            dataHolder.getMqttClient().subscribe(new String[]{tf_topicsFilter_sub.getText()},new int[]{qos});
             //ta_history.appendText(sdf.format(new Date())+"INFO: 订阅(Topic:"+tf_topicsFilter_sub.getText()+",Qos:"+qos+")\n");
             logger.info("topicsFilters:{},Qos:{}\t消息订阅成功！",tf_topicsFilter_sub.getText(),qos);
         } catch (MqttException e) {
@@ -47,7 +48,7 @@ public class SubController  {
         init();
     }
     private void init(){
-        this.client=mainController.getClient();
+        this.dataHolder=mainController.getDataHolder();
 
     }
     @FXML

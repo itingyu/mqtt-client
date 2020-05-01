@@ -1,14 +1,14 @@
 package com.canyue.mqtt.core.client.impl;
 
 import com.canyue.mqtt.core.*;
-import com.canyue.mqtt.core.EventSource.ClientStatusEventSource;
-import com.canyue.mqtt.core.EventSource.MessageEventSource;
 import com.canyue.mqtt.core.callback.ClientCallback;
 import com.canyue.mqtt.core.client.IMqttClient;
 import com.canyue.mqtt.core.exception.MqttException;
 import com.canyue.mqtt.core.exception.MqttIllegalArgumentException;
 import com.canyue.mqtt.core.exception.MqttPersistenceException;
 import com.canyue.mqtt.core.exception.MqttStartFailedException;
+import com.canyue.mqtt.core.listener.ClientStatusListener;
+import com.canyue.mqtt.core.listener.MessageReceivedListener;
 import com.canyue.mqtt.core.network.INetworkModule;
 import com.canyue.mqtt.core.network.impl.TcpModule;
 import com.canyue.mqtt.core.packet.*;
@@ -21,28 +21,41 @@ import java.io.IOException;
 import java.util.concurrent.*;
 
 public class MqttClient implements IMqttClient {
-    private MessageQueue messageQueue;
-    private INetworkModule networkModule;
-    private ExecutorService executorService;
     private static int msgId=1;
+    private int max_reconnect_times = 5;
+    private int reconnect_count=0;
     private static Logger logger= LoggerFactory.getLogger(MqttClient.class);
-    private MessageEventSource messageEventSource;
-    private ClientStatusEventSource clientStatusEventSource;
-    private String host="127.0.0.1";
-    private int port=1883;
+    private Object pingLock=new Object();
+    private boolean runState = false;
+
     private SenderThread senderThread ;
     private ReceiverThread receiverThread;
     private PingThread pingThread;
-    private IPersistence persistence;
-    private Object pingLock=new Object();
+    private ExecutorService executorService;
     private ConnectConfig connectConfig;
-    private int max_reconnect_times = 5;
-    private int reconnect_count=0;
-    private boolean runState = false;
+
+     String host;
+    int port;
+    private MessageQueue messageQueue;
+    private INetworkModule networkModule;
+    IPersistence persistence;
+    MessageReceivedListener messageReceivedListener;
+    ClientStatusListener clientStatusListener;
 
     private synchronized static int getMsgId() {
         msgId++;
         return msgId-1;
+    }
+    public MqttClient(){
+        this(new Builder());
+    }
+     MqttClient(Builder builder) {
+        this.host = builder.host;
+        this.port = builder.port;
+        this.persistence =builder.persistence;
+        this.messageReceivedListener = builder.messageReceivedListener;
+        this.clientStatusListener = builder.clientStatusListener;
+
     }
 
     public void start() throws MqttStartFailedException {
@@ -69,27 +82,6 @@ public class MqttClient implements IMqttClient {
         }
     }
 
-
-    public MqttClient setMessageEventSource(MessageEventSource messageEventSource) {
-        this.messageEventSource=messageEventSource;
-        return this;
-    }
-    public MqttClient setHost(String host){
-        this.host=host;
-        return this;
-    }
-    public MqttClient setNetworkModule(INetworkModule networkModule){
-        this.networkModule = networkModule;
-        return this;
-    }
-    public MqttClient setPort(int port){
-        this.port=port;
-        return this;
-    }
-    public MqttClient setPersistence(IPersistence persistence){
-        this.persistence=persistence;
-        return this;
-    }
     public void unsubscribe(String[] topicsFilters) throws MqttException {
         for(int i=0;i<topicsFilters.length;i++){
             TopicUtils.validateTopicFilter(topicsFilters[i]);
@@ -124,10 +116,16 @@ public class MqttClient implements IMqttClient {
         persistence.save("msgId",msgId);
         persistence.close();
         executorService.shutdownNow();
+
         try {
             executorService.awaitTermination(2,TimeUnit.SECONDS);
         } catch (InterruptedException e) {
             throw new MqttException(e);
+        }
+        try {
+            networkModule.stop();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
 
     }
@@ -144,8 +142,8 @@ public class MqttClient implements IMqttClient {
         messageQueue=new MessageQueue(persistence,connectConfig);
         messageQueue.setClientCallback(new ClientCallbackImpl(this.messageQueue));
 
-        messageQueue.setMessageEventSource(messageEventSource);
-        messageQueue.setClientStatusEventSource(clientStatusEventSource);
+        messageQueue.setMessageReceivedListener(messageReceivedListener);
+        messageQueue.setClientStatusListener(clientStatusListener);
 
         senderThread.setMessageQueue(messageQueue);
         receiverThread.setMessageQueue(messageQueue);
@@ -196,7 +194,7 @@ public class MqttClient implements IMqttClient {
             logger.info("连接成功!");
         }
 
-        public void reconnect() {
+        public synchronized void reconnect() {
             if(reconnect_count<max_reconnect_times){
                 reconnect_count++;
                 try {
@@ -206,6 +204,11 @@ public class MqttClient implements IMqttClient {
                     try {
                         executorService.awaitTermination(2,TimeUnit.SECONDS);
                     } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    try {
+                        networkModule.stop();
+                    } catch (IOException e) {
                         e.printStackTrace();
                     }
                     logger.info("3秒之后进行第{}次自动重连！",reconnect_count);
@@ -231,26 +234,31 @@ public class MqttClient implements IMqttClient {
             }
         }
         public void shutdown() {
-            if(runState){
-                try {
-                    persistence.save("msgId",msgId);
-                    persistence.close();
-                } catch (MqttPersistenceException e) {
-                    logger.error("发生错误，未正常关闭，可能会丢失数据！");
+            synchronized (this){
+                if(runState){
+                    try {
+                        persistence.save("msgId",msgId);
+                        persistence.close();
+                    } catch (MqttPersistenceException e) {
+                        logger.error("发生错误，未正常关闭，可能会丢失数据！");
+                    }
+                    executorService.shutdownNow();
+                    try {
+                        executorService.awaitTermination(2,TimeUnit.SECONDS);
+                    } catch (InterruptedException e) {
+                    }
+                    try {
+                        networkModule.stop();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    runState=false;
+                    this.messageQueue.shutdown();
                 }
-                executorService.shutdownNow();
-                try {
-                    executorService.awaitTermination(2,TimeUnit.SECONDS);
-                } catch (InterruptedException e) {
-                }
-                runState=false;
-                this.messageQueue.shutdown();
             }
         }
     }
-
-    public MqttClient setClientStatusEventSource(ClientStatusEventSource clientStatusEventSource) {
-        this.clientStatusEventSource = clientStatusEventSource;
-        return this;
+    public static Builder getBuilder(){
+        return  new Builder();
     }
 }

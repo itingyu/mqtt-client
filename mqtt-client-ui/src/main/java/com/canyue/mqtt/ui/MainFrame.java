@@ -30,6 +30,7 @@ public class MainFrame extends Application {
         primaryStage.getIcons().add(new Image("img/mqtt.png"));
         primaryStage.show();
         MainController mainController = fxmlLoader.getController();
+        mainController.setMainStage(primaryStage);
         primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
             @Override
             public void handle(WindowEvent event) {

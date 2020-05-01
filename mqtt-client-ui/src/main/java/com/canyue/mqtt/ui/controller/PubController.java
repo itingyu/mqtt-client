@@ -2,6 +2,7 @@ package com.canyue.mqtt.ui.controller;
 
 import com.canyue.mqtt.core.client.impl.MqttClient;
 import com.canyue.mqtt.core.exception.MqttException;
+import com.canyue.mqtt.ui.DataHolder;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
@@ -22,7 +23,7 @@ public class PubController {
     private MainController mainController;
 
     private static Logger logger = LoggerFactory.getLogger(PubController.class);
-    private MqttClient client;
+    private DataHolder dataHolder;
 
     public void publish(ActionEvent actionEvent) {
         logger.debug("publish clicked!");
@@ -31,7 +32,7 @@ public class PubController {
             //ta_history.appendText(sdf.format(new Date())+"INFO: 发布信息("+msg+")\n");
             try {
                 //client.publish(msg);
-                client.publish(tf_topic_pub.getText(),ta_msg_pub.getText().getBytes(),qos,rb_retained.isSelected());
+                dataHolder.getMqttClient().publish(tf_topic_pub.getText(),ta_msg_pub.getText().getBytes(),qos,rb_retained.isSelected());
                 logger.info("message:{},Qos:{}\t消息发布成功！",qos);
             } catch (MqttException e) {
                 logger.error("发布失败:",e);
@@ -46,7 +47,7 @@ public class PubController {
     }
 
     private void init() {
-        this.client=this.mainController.getClient();
+        this.dataHolder=this.mainController.getDataHolder();
     }
 
     @FXML

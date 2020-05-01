@@ -1,8 +1,6 @@
 package com.canyue.mqtt.core.client;
 
 import com.canyue.mqtt.core.Message;
-import com.canyue.mqtt.core.EventSource.MessageEventSource;
-import com.canyue.mqtt.core.client.impl.MqttClient;
 import com.canyue.mqtt.core.exception.MqttException;
 
 
@@ -13,5 +11,4 @@ public interface IMqttClient {
 	public void subscribe(String[] topicsFilters,int[] qosList) throws MqttException;
 	public void unsubscribe(String[] topicsFilters) throws MqttException;
 	public void publish(String topicName, byte[] payload, int qos, boolean isRetain) throws MqttException;
-	public MqttClient setMessageEventSource(MessageEventSource messageEventSource);
 }

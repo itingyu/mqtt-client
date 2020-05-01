@@ -6,6 +6,8 @@ import com.canyue.mqtt.core.callback.ClientCallback;
 import com.canyue.mqtt.core.event_object.ClientStatusEvent;
 import com.canyue.mqtt.core.event_object.MessageEvent;
 import com.canyue.mqtt.core.exception.MqttPersistenceException;
+import com.canyue.mqtt.core.listener.ClientStatusListener;
+import com.canyue.mqtt.core.listener.MessageReceivedListener;
 import com.canyue.mqtt.core.packet.*;
 import com.canyue.mqtt.core.persistence.IPersistence;
 import org.slf4j.Logger;
@@ -149,20 +151,12 @@ public class MessageQueue {
         logger.info("收到一个{}报文,正在处理中。。。",basePacket.getType());
     }
 
-    public void setMessageEventSource(MessageEventSource messageEventSource) {
-        this.messageEventSource = messageEventSource;
-    }
-
     public ClientCallback getClientCallback() {
         return clientCallback;
     }
 
     public void setClientCallback(ClientCallback clientCallback) {
         this.clientCallback = clientCallback;
-    }
-
-    public void setClientStatusEventSource(ClientStatusEventSource clientStatusEventSource) {
-        this.clientStatusEventSource = clientStatusEventSource;
     }
     public void shutdown(){
         if(clientStatusEventSource!=null){
@@ -172,6 +166,24 @@ public class MessageQueue {
     public void connectCompeted(){
         if(clientStatusEventSource!=null){
             clientStatusEventSource.notifyListenerEvent(new ClientStatusEvent(clientStatusEventSource,ClientStatusEvent.RUN));
+        }
+    }
+
+    public void setMessageReceivedListener(MessageReceivedListener messageReceivedListener) {
+        if(messageReceivedListener!=null){
+            if(messageEventSource==null){
+                messageEventSource = new MessageEventSource();
+            }
+            this.messageEventSource.setListener(messageReceivedListener);
+        }
+    }
+
+    public void setClientStatusListener(ClientStatusListener clientStatusListener) {
+        if(clientStatusListener!=null){
+            if(clientStatusEventSource==null){
+                clientStatusEventSource=new ClientStatusEventSource();
+            }
+            this.clientStatusEventSource.setListener(clientStatusListener);
         }
     }
 }
