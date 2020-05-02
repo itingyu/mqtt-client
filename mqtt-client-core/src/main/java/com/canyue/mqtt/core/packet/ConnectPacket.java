@@ -12,6 +12,8 @@ import java.io.IOException;
 
 
 /**
+ * @author canyue
+ *
  * 连接报文：
  *      byte1 :  0x10
  *      剩余长度
@@ -38,12 +40,11 @@ import java.io.IOException;
  *
  */
 public class ConnectPacket extends BasePacket {
-    private final static PacketType type = PacketType.CONNECT_TYPE;
+    private final  PacketType type = PacketType.CONNECT_TYPE;
     private String clientId;
-    //遗嘱消息
-//    private int qos;
-//    private String willTopic;
-//    private String willMessage;
+    /**
+     * 遗嘱消息
+     */
     private Message willMessage;
     private String userName;
     private String password;
@@ -76,11 +77,12 @@ public class ConnectPacket extends BasePacket {
     }
 
 
+    @Override
     public byte[] getVariableHeader() throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         DataOutputStream dos = new DataOutputStream(baos);
         byte connectFlags = 0;
-        PacketUtils.encodeMQTTUTF8(dos,"MQTT");
+        PacketUtils.encodeMqttUtf8(dos,"MQTT");
         dos.writeByte(4);
         if(cleanSession==true){
             connectFlags|=0x02;
@@ -88,8 +90,9 @@ public class ConnectPacket extends BasePacket {
         if(willMessage!=null){
             connectFlags|=0x04;
             connectFlags|=willMessage.getQos()<<3;
-            if(willMessage.isRetain())
+            if(willMessage.isRetain()) {
                 connectFlags|=0x20;
+            }
         }
         if(userName!=null){
             connectFlags|=0x80;
@@ -103,28 +106,31 @@ public class ConnectPacket extends BasePacket {
         return baos.toByteArray();
     }
 
+    @Override
     public byte[] getPayload() throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         DataOutputStream dos = new DataOutputStream(baos);
-        PacketUtils.encodeMQTTUTF8(dos,clientId);
+        PacketUtils.encodeMqttUtf8(dos,clientId);
         if(willMessage!=null){
-            PacketUtils.encodeMQTTUTF8(dos,willMessage.getTopic());
+            PacketUtils.encodeMqttUtf8(dos,willMessage.getTopic());
             dos.writeShort(willMessage.getPayload().length);
             dos.write(willMessage.getPayload());
         }
         if (userName!=null){
-            PacketUtils.encodeMQTTUTF8(dos, userName);
+            PacketUtils.encodeMqttUtf8(dos, userName);
             if (password != null&&password.length()>0) {
-                PacketUtils.encodeMQTTUTF8(dos, password);
+                PacketUtils.encodeMqttUtf8(dos, password);
             }
         }
         dos.flush();
         return baos.toByteArray();
 
     }
+    @Override
     public PacketType getType() {
         return type;
     }
+    @Override
     public byte getFixHeaderFlag() {
         return 0;
     }

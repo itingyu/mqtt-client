@@ -19,62 +19,62 @@
       <HBox prefHeight="34.0" prefWidth="600.0" VBox.vgrow="ALWAYS">
          <children>
             <Label prefHeight="20.0" prefWidth="87.0" text="Broker IP:" HBox.hgrow="ALWAYS" />
-            <TextField fx:id="tf_config_host" HBox.hgrow="ALWAYS" />
+            <TextField fx:id="tfConfigHost" HBox.hgrow="ALWAYS" />
          </children>
       </HBox>
       <HBox prefHeight="100.0" prefWidth="200.0">
          <children>
             <Label prefHeight="20.0" prefWidth="99.0" text="Broker Port:" HBox.hgrow="ALWAYS" />
-            <TextField fx:id="tf_config_port" prefHeight="30.0" prefWidth="164.0" HBox.hgrow="ALWAYS" />
+            <TextField fx:id="tfConfigPort" prefHeight="30.0" prefWidth="164.0" HBox.hgrow="ALWAYS" />
          </children>
       </HBox>
       <HBox prefHeight="100.0" prefWidth="200.0">
          <children>
-            <Label text="Client ID:" />
-            <TextField fx:id="tf_clientID"/>
-            <Button mnemonicParsing="false" text="生成ID" onAction="#generateClientID"/>
+            <Label text="Client Id:" />
+            <TextField fx:id="tfClientId"/>
+            <Button mnemonicParsing="false" text="生成ID" onAction="#generateClientId"/>
          </children>
       </HBox>
       <HBox prefHeight="100.0" prefWidth="200.0">
          <children>
             <Label text="保持连接(秒)" />
-            <TextField fx:id="tf_config_keepAlive"/>
+            <TextField fx:id="tfConfigKeepAlive"/>
          </children>
       </HBox>
       <HBox prefHeight="100.0" prefWidth="200.0">
          <children>
-            <RadioButton fx:id="rb_config_cleanSession" mnemonicParsing="false" text="清理会话" />
+            <RadioButton fx:id="rbConfigCleanSession" mnemonicParsing="false" text="清理会话" />
          </children>
       </HBox>
       <HBox prefHeight="100.0" prefWidth="200.0">
          <children>
-            <RadioButton fx:id="rb_config_reconnect" mnemonicParsing="false" text="自动重连" />
+            <RadioButton fx:id="rbConfigReconnect" mnemonicParsing="false" text="自动重连" />
          </children>
       </HBox>
       <HBox prefHeight="100.0" prefWidth="200.0">
          <children>
             <Label text="用户名" />
-            <TextField fx:id="tf_config_username"/>
+            <TextField fx:id="tfConfigUsername"/>
             <Label text="密码" />
-            <PasswordField fx:id="pf_config_password"/>
+            <PasswordField fx:id="pfConfigPassword"/>
          </children>
       </HBox>
       <HBox prefHeight="100.0" prefWidth="200.0">
          <children>
             <VBox prefHeight="200.0" prefWidth="100.0">
                <children>
-                  <Spinner fx:id="sp_config_willMessage_qos"/>
-                  <RadioButton fx:id="rb_config_willMessage_isRetain" mnemonicParsing="false" text="保留" />
-                  <TextField fx:id="tf_config_willMessage_topic" prefHeight="30.0" prefWidth="262.0" />
-                  <TextArea fx:id="ta_config_willMessage_payload" prefHeight="47.0" prefWidth="196.0" />
+                  <Spinner fx:id="spConfigWillMessageQos"/>
+                  <RadioButton fx:id="rbConfigWillMessageIsRetain" mnemonicParsing="false" text="保留" />
+                  <TextField fx:id="tfConfigWillMessageTopic" prefHeight="30.0" prefWidth="262.0" />
+                  <TextArea fx:id="taConfigWillMessagePayload" prefHeight="47.0" prefWidth="196.0" />
                </children>
             </VBox>
          </children>
       </HBox>
       <HBox prefHeight="100.0" prefWidth="200.0">
          <children>
-            <Button mnemonicParsing="false" text="确定" fx:id="btn_config_ok" onAction="#confirmConfig"/>
-            <Button mnemonicParsing="false" text="取消" fx:id="btn_config_cancel" onAction="#cancelConfig"/>
+            <Button mnemonicParsing="false" text="确定" fx:id="btnConfigOk" onAction="#confirmConfig"/>
+            <Button mnemonicParsing="false" text="取消" fx:id="btnConfigCancel" onAction="#cancelConfig"/>
          </children>
       </HBox>
    </children>

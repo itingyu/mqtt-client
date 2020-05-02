@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 
 /**
+ * @author canyue
  * 心跳请求
  *      固定报头：
  *                      byte1：0xc0
@@ -13,7 +14,7 @@ import java.io.IOException;
  *
  */
 public class PingReqPacket extends BasePacket{
-	private final static PacketType type = PacketType.PINGREQ_TYPE;
+	private final  PacketType type = PacketType.PINGREQ_TYPE;
 	private static Logger logger= LoggerFactory.getLogger(PingReqPacket.class);
 	public PingReqPacket(byte[] data) {
 		super();
@@ -23,17 +24,21 @@ public class PingReqPacket extends BasePacket{
 		logger.debug("ping req 报文生成完毕!");
 	}
 	
-	public byte[] getVariableHeader() throws IOException {
+	@Override
+    public byte[] getVariableHeader() throws IOException {
         return new byte[0];
     }
 
-    public byte[] getPayload() throws IOException {
+    @Override
+	public byte[] getPayload() throws IOException {
         return new byte[0];
     }
 
-    public byte getFixHeaderFlag() {
+    @Override
+	public byte getFixHeaderFlag() {
         return 0;
     }
+	@Override
 	public PacketType getType() {
 		return type;
 	}

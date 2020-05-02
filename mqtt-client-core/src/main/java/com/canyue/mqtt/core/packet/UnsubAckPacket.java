@@ -8,6 +8,7 @@ import java.io.DataInputStream;
 import java.io.IOException;
 
 /**
+ * @author canyue
  * 取消订阅确认：
  *      固定报头;
  *                      byte1: 0xb0
@@ -17,7 +18,7 @@ import java.io.IOException;
  */
 public class UnsubAckPacket extends BasePacket {
     
-    private final static PacketType type = PacketType.UNSUBACK_TYPE;
+    private final  PacketType type = PacketType.UNSUBACK_TYPE;
     private static Logger logger = LoggerFactory.getLogger(UnsubAckPacket.class);
     public UnsubAckPacket(byte[] data) {
         ByteArrayInputStream bais = new ByteArrayInputStream(data);
@@ -40,17 +41,21 @@ public class UnsubAckPacket extends BasePacket {
 
     private int msgId;
 
+    @Override
     public byte[] getVariableHeader() throws IOException {
         return new byte[]{(byte)((msgId>>8)&0xff),(byte)((msgId>>0)&0xff)};
     }
 
+    @Override
     public byte[] getPayload() throws IOException {
         return new byte[0];
     }
 
+    @Override
     public byte getFixHeaderFlag() {
         return 0;
     }
+    @Override
     public PacketType getType() {
         return type;
     }

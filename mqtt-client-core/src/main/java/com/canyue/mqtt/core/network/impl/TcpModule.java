@@ -11,6 +11,10 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketAddress;
 
+
+/**
+ * @author canyue
+ */
 public class TcpModule implements INetworkModule {
 	private Socket socket;
 	private String host;
@@ -26,25 +30,28 @@ public class TcpModule implements INetworkModule {
 		this.port=port;
 	}
 	private static Logger logger= LoggerFactory.getLogger(TcpModule.class);
-	public void start() throws IOException {
+	@Override
+    public void start() throws IOException {
 		
 		SocketAddress address=new InetSocketAddress(host,port);
 		this.socket=new Socket();
 		socket.connect(address,timeout*1000);
-		//设置一次读取的最大时长
-		//socket.setSoTimeout(1000);
 		logger.info("本地socket：{}",socket.getLocalSocketAddress());
 	}
 	
+	@Override
 	public void stop() throws IOException {
-		if(socket!=null)
+		if(socket!=null) {
 			socket.close();
+		}
 	}
 	
+	@Override
 	public InputStream getInputStream() throws IOException {
 		return socket.getInputStream();
 	}
 	
+	@Override
 	public OutputStream getOutputStream() throws IOException {
 		return socket.getOutputStream();
 	}

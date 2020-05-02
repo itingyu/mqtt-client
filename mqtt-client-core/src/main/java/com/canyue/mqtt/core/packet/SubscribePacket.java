@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.util.Arrays;
 
 /**
+ * @author canyue
  * 订阅主题：
  *      固定报头：
  *              byte1 :0x82
@@ -22,7 +23,7 @@ import java.util.Arrays;
  *                  服务质量要求（1字节）   : 没有用到高六位。如果Qos不等于0,1,2，则为不合法.
  */
 public class SubscribePacket extends BasePacket {
-    private final static PacketType type = PacketType.SUBSCRIBE_TYPE;
+    private final  PacketType type = PacketType.SUBSCRIBE_TYPE;
     private int topicCount=0;
     private String[] topicsFilters;
     private int[] requiredQos;
@@ -56,25 +57,29 @@ public class SubscribePacket extends BasePacket {
                 "\trequiredQos:{};",msgId,Arrays.toString(topicsFilters),Arrays.toString(requiredQos));
     }
 
+    @Override
     public byte[] getVariableHeader() throws IOException {
         return new byte[]{(byte)((msgId>>8)&0xff),(byte)((msgId>>0)&0xff)};
     }
 
+    @Override
     public byte[] getPayload() throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         DataOutputStream dos = new DataOutputStream(baos);
         int index = 0;
         while (index<topicsFilters.length){
-            PacketUtils.encodeMQTTUTF8(dos,topicsFilters[index]);
+            PacketUtils.encodeMqttUtf8(dos,topicsFilters[index]);
             dos.writeByte(requiredQos[index]);
             index++;
         }
         return baos.toByteArray();
     }
 
+    @Override
     public byte getFixHeaderFlag() {
         return 2;
     }
+    @Override
     public PacketType getType() {
         return type;
     }

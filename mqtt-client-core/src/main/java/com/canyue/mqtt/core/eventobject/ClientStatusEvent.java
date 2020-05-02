@@ -1,9 +1,12 @@
-package com.canyue.mqtt.core.event_object;
+package com.canyue.mqtt.core.eventobject;
 
-import com.canyue.mqtt.core.EventSource.ClientStatusEventSource;
-
+import com.canyue.mqtt.core.eventsource.ClientStatusEventSource;
 import java.util.EventObject;
 
+
+/**
+ * @author canyue
+ */
 public class ClientStatusEvent extends EventObject {
     /**
      * Constructs a prototypical Event.

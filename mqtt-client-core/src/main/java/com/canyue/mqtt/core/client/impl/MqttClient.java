@@ -17,13 +17,16 @@ import com.canyue.mqtt.core.util.TopicUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
+import java.io.*;
 import java.util.concurrent.*;
 
+/**
+ * @author canyue
+ */
 public class MqttClient implements IMqttClient {
     private static int msgId=1;
-    private int max_reconnect_times = 5;
-    private int reconnect_count=0;
+    private int maxReconnectTimes = 5;
+    private int reconnectCount =0;
     private static Logger logger= LoggerFactory.getLogger(MqttClient.class);
     private Object pingLock=new Object();
     private boolean runState = false;
@@ -43,8 +46,11 @@ public class MqttClient implements IMqttClient {
     ClientStatusListener clientStatusListener;
 
     private synchronized static int getMsgId() {
-        msgId++;
-        return msgId-1;
+       int _msgId = msgId;
+       if(++msgId>65535){
+           msgId=1;
+       }
+        return _msgId;
     }
     public MqttClient(){
         this(new Builder());
@@ -58,11 +64,13 @@ public class MqttClient implements IMqttClient {
 
     }
 
+    @Override
     public void start() throws MqttStartFailedException {
         Thread.currentThread().setName("MainThread");
         networkModule = new TcpModule(host,port);
         logger.debug("正在与服务器{}建立连接。。。");
         try {
+            logger.info("目标主机地址 {}:{}",host,port);
             networkModule.start();
             senderThread=new SenderThread(networkModule.getOutputStream());
             senderThread.setPingLock(pingLock);
@@ -82,6 +90,7 @@ public class MqttClient implements IMqttClient {
         }
     }
 
+    @Override
     public void unsubscribe(String[] topicsFilters) throws MqttException {
         for(int i=0;i<topicsFilters.length;i++){
             TopicUtils.validateTopicFilter(topicsFilters[i]);
@@ -95,7 +104,8 @@ public class MqttClient implements IMqttClient {
       messageQueue.handleSendMsg(unsubscribePacket);
         logger.info("msgId:{},unsubscribe报文已加入队列!",msgId);
     }
-    public void subscribe(String[] topicsFilters,int[] qosList) throws MqttException {
+    @Override
+    public void subscribe(String[] topicsFilters, int[] qosList) throws MqttException {
         for(int i=0;i<topicsFilters.length;i++){
             TopicUtils.validateTopicFilter(topicsFilters[i]);
         }
@@ -108,37 +118,28 @@ public class MqttClient implements IMqttClient {
         logger.info("msgId:{},subscribe报文已加入队列!",msgId);
     }
 
+    @Override
     public void disconnect() throws MqttException {
         logger.debug("正在生成disconnect报文!");
         DisconnectPacket disconnectPacket = new DisconnectPacket();
         messageQueue.handleSendMsg(disconnectPacket);
         logger.info("disconnect报文已加入队列!");
-        persistence.save("msgId",msgId);
-        persistence.close();
-        executorService.shutdownNow();
-
-        try {
-            executorService.awaitTermination(2,TimeUnit.SECONDS);
-        } catch (InterruptedException e) {
-            throw new MqttException(e);
-        }
         try {
             networkModule.stop();
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("socket关闭异常",e);
         }
 
     }
-    public void connect(String username,String password,String clientId,Message willMessage,int keepAlive,boolean cleanSession) throws MqttException {
+    @Override
+    public void connect(String username, String password, String clientId, Message willMessage, int keepAlive, boolean cleanSession) throws MqttException {
         logger.debug("正在生成connect报文!");
         connectConfig=new ConnectConfig(clientId,willMessage,username,password,cleanSession,keepAlive);
         ConnectPacket connectPacket = new ConnectPacket(clientId
                 ,willMessage,username,password,cleanSession,keepAlive);
         //连接报文
         Object o;
-        if((o=persistence.find("msgId"))!=null){
-            msgId= (int) o;
-        }
+        initMsgId();
         messageQueue=new MessageQueue(persistence,connectConfig);
         messageQueue.setClientCallback(new ClientCallbackImpl(this.messageQueue));
 
@@ -162,6 +163,7 @@ public class MqttClient implements IMqttClient {
         this.connect(connectConfig.getUserName(),connectConfig.getPassword(),connectConfig.getClientId(),connectConfig.getWillMessage(),connectConfig.getKeepAlive(),connectConfig.isCleanSession());
     }
 
+    @Override
     public void publish(String topicName, byte[] payload, int qos, boolean isRetain) throws MqttIllegalArgumentException, MqttPersistenceException {
         TopicUtils.validateTopicName(topicName);
         if(qos<0||qos>2){
@@ -194,9 +196,10 @@ public class MqttClient implements IMqttClient {
             logger.info("连接成功!");
         }
 
+        @Override
         public synchronized void reconnect() {
-            if(reconnect_count<max_reconnect_times){
-                reconnect_count++;
+            if(reconnectCount<maxReconnectTimes){
+                reconnectCount++;
                 try {
 
                     persistence.close();
@@ -211,12 +214,12 @@ public class MqttClient implements IMqttClient {
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
-                    logger.info("3秒之后进行第{}次自动重连！",reconnect_count);
+                    logger.info("3秒之后进行第{}次自动重连！",reconnectCount);
                     Thread.sleep(3*1000);
                     start();
                     connect(connectConfig);
                 }catch (MqttException | InterruptedException e) {
-                    logger.error("第{}次自动重连失败",reconnect_count,e);
+                    logger.error("第{}次自动重连失败",reconnectCount,e);
                 }
             }else {
                 logger.info("重连失败，请检查你的连接配置参数！");
@@ -233,11 +236,12 @@ public class MqttClient implements IMqttClient {
                 }
             }
         }
+        @Override
         public void shutdown() {
             synchronized (this){
                 if(runState){
                     try {
-                        persistence.save("msgId",msgId);
+                        saveMsgId();
                         persistence.close();
                     } catch (MqttPersistenceException e) {
                         logger.error("发生错误，未正常关闭，可能会丢失数据！");
@@ -254,6 +258,60 @@ public class MqttClient implements IMqttClient {
                     }
                     runState=false;
                     this.messageQueue.shutdown();
+                }
+            }
+        }
+    }
+    private void saveMsgId(){
+        FileOutputStream fos=null;
+        DataOutputStream dos  = null;
+        File f = new File( System.getProperty("user.dir"),connectConfig.getClientId()+"msgId.data");
+        if(connectConfig.isCleanSession()){
+            f.delete();
+            return;
+        }
+        try {
+            if(!f.exists()||!f.isFile()){
+                f.createNewFile();
+                logger.info("msgId：{}",f.getAbsolutePath());
+            }
+            fos = new FileOutputStream(f);
+            dos = new DataOutputStream(fos);
+           dos.write(msgId);
+           dos.flush();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                fos.close();
+                dos.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+    public void initMsgId(){
+        FileInputStream fis = null;
+        DataInputStream dis = null;
+        File f = new File( System.getProperty("user.dir"),connectConfig.getClientId()+"msgId.data");
+        if(f.exists()&&f.isFile()){
+            try {
+                fis = new FileInputStream(f);
+                dis = new DataInputStream(fis);
+                msgId=dis.readInt();
+                logger.info("msgId:{}",msgId);
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            } finally {
+                try {
+                    fis.close();
+                    dis.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
             }
         }

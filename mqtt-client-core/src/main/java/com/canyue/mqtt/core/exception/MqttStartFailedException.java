@@ -1,5 +1,8 @@
 package com.canyue.mqtt.core.exception;
 
+/**
+ * @author canyue
+ */
 public class MqttStartFailedException extends MqttException {
     public MqttStartFailedException(){
         super();

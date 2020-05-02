@@ -11,6 +11,10 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
+
+/**
+ * @author canyue
+ */
 public class FilePersistence implements IPersistence {
     private String userDir = System.getProperty("user.dir");
     private File dataDir = null;

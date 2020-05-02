@@ -4,6 +4,9 @@ import com.canyue.mqtt.core.exception.MqttIllegalArgumentException;
 
 import java.io.UnsupportedEncodingException;
 
+/**
+ * @author canyue
+ */
 public class TopicUtils {
     private static final int MIN_LEN = 1;
     private static final int MAX_LEN=65535;
@@ -25,7 +28,7 @@ public class TopicUtils {
 
         if(wildcardAllowed){
             //是#或者+
-           if(str.equals("#")||str.equals("+")){
+           if("#".equals(str)||"+".equals(str)){
                return;
            }
            //只包含一个#且是/#结尾

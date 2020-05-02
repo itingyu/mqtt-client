@@ -15,11 +15,11 @@
                 <HBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="36.0" prefWidth="600.0" style="-fx-background-color: #dddddd;">
                     <children>
                         <Label prefHeight="35.0" prefWidth="47.0" text="主题:" />
-                        <TextField id="tf_topic_pub" fx:id="tf_topic_pub" alignment="CENTER" style="-fx-background-radius: 6;" text="/test/topicTest01">
+                        <TextField  fx:id="tfTopicPub" alignment="CENTER" style="-fx-background-radius: 6;" text="/test/topicTest01">
                             <padding>
                                 <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                             </padding></TextField>
-                        <Button id="btn_publish" fx:id="btn_publish" mnemonicParsing="false" onAction="#publish" style="-fx-background-radius: 10; -fx-background-color: #888888;" text="发布" textAlignment="CENTER">
+                        <Button  mnemonicParsing="false" onAction="#publish" style="-fx-background-radius: 10; -fx-background-color: #888888;" text="发布" textAlignment="CENTER">
                             <HBox.margin>
                                 <Insets left="50.0" />
                             </HBox.margin>
@@ -36,22 +36,22 @@
                         <HBox spacing="20.0">
                             <RadioButton nodeOrientation="RIGHT_TO_LEFT" selected="true" text="Qos0">
                                 <toggleGroup>
-                                    <ToggleGroup fx:id="tg_qos_pub" />
+                                    <ToggleGroup fx:id="tgQosPub" />
                                 </toggleGroup></RadioButton>
-                            <RadioButton nodeOrientation="RIGHT_TO_LEFT" text="Qos1" toggleGroup="$tg_qos_pub" />
-                            <RadioButton nodeOrientation="RIGHT_TO_LEFT" text="Qos2" toggleGroup="$tg_qos_pub" />
+                            <RadioButton nodeOrientation="RIGHT_TO_LEFT" text="Qos1" toggleGroup="$tgQosPub" />
+                            <RadioButton nodeOrientation="RIGHT_TO_LEFT" text="Qos2" toggleGroup="$tgQosPub" />
                             <padding>
                                 <Insets bottom="10.0" left="20.0" right="20.0" top="10.0" />
                             </padding>
                         </HBox>
-                        <RadioButton id="rb_retained" fx:id="rb_retained" nodeOrientation="RIGHT_TO_LEFT" text="Retained">
+                        <RadioButton  fx:id="rbRetain" nodeOrientation="RIGHT_TO_LEFT" text="Retain">
                             <HBox.margin>
                                 <Insets bottom="10.0" left="50.0" right="20.0" top="10.0" />
                             </HBox.margin>
                         </RadioButton>
                     </children>
                 </HBox>
-                <TextArea id="ta_msg_pub" fx:id="ta_msg_pub" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" promptText="这里输入要发布的消息。。。" style="-fx-background-color: #dddddd;" styleClass="-fx-border-radius: 2px;   -fx-background-radius: 2px;" VBox.vgrow="ALWAYS">
+                <TextArea  fx:id="taMsgPub" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" promptText="这里输入要发布的消息。。。" style="-fx-background-color: #dddddd;" styleClass="-fx-border-radius: 2px;   -fx-background-radius: 2px;" VBox.vgrow="ALWAYS">
                     <padding>
                         <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
                     </padding>

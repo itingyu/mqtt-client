@@ -7,6 +7,7 @@ import java.io.*;
 import java.util.Arrays;
 
 /**
+ * @author canyue
  *订阅确认：
  *    固定报头：
  *          byte1:0x90
@@ -25,7 +26,7 @@ import java.util.Arrays;
 public class SubAckPacket extends BasePacket {
 
     private int[] returnCodes;
-    private final static PacketType type=PacketType.SUBACK_TYPE;
+    private final  PacketType type=PacketType.SUBACK_TYPE;
 
     public int getMsgId() {
         return msgId;
@@ -57,10 +58,12 @@ public class SubAckPacket extends BasePacket {
                 "\treturnCodes:{};",msgId,Arrays.toString(returnCodes));
     }
 
+    @Override
     public byte[] getVariableHeader() throws IOException {
         return new byte[]{(byte)((msgId>>8)&0xff),(byte)((msgId>>0)&0xff)};
     }
 
+    @Override
     public byte[] getPayload() throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         DataOutputStream dos = new DataOutputStream(baos);
@@ -72,9 +75,11 @@ public class SubAckPacket extends BasePacket {
         return baos.toByteArray();
     }
 
+    @Override
     public byte getFixHeaderFlag() {
         return 0;
     }
+    @Override
     public PacketType getType() {
         return type;
     }

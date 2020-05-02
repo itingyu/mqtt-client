@@ -8,6 +8,9 @@ import java.io.IOException;
 import java.io.OutputStream;
 
 
+/**
+ * @author canyue
+ */
 public class SenderThread implements Runnable{
     private  MessageQueue messageQueue;
 
@@ -26,6 +29,7 @@ public class SenderThread implements Runnable{
         this.messageQueue = messageQueue;
     }
 
+    @Override
     public void run() {
         Thread.currentThread().setName("SenderThread");
         logger.debug("senderThread已启动!");

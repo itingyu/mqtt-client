@@ -7,6 +7,10 @@ import com.canyue.mqtt.core.listener.impl.DefaultMessageReceivedShower;
 import com.canyue.mqtt.core.persistence.IPersistence;
 import com.canyue.mqtt.core.persistence.impl.DefaultPersistence;
 
+
+/**
+ * @author canyue
+ */
 public class Builder {
 
     private MqttClient mqttClient;
@@ -28,7 +32,7 @@ public class Builder {
     }
 
     public Builder setHost(String host){
-        if(host==null||host.equals("")){
+        if(host==null||"".equals(host)){
             throw new IllegalArgumentException();
         }
         this.host = host;

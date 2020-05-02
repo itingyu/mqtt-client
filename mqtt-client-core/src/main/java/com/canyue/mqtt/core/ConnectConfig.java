@@ -1,11 +1,14 @@
 package com.canyue.mqtt.core;
 
+
+
+
+/**
+ * @author canyue
+ */
 public class ConnectConfig {
     private String clientId;
     //遗嘱消息
-//    private int qos;
-//    private String willTopic;
-//    private String willMessage;
     private Message willMessage;
     private String userName;
     private String password;

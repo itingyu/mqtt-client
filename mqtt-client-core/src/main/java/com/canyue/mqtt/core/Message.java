@@ -1,15 +1,15 @@
 package com.canyue.mqtt.core;
 
-
-import com.canyue.mqtt.core.exception.MqttIllegalArgumentException;
-import com.canyue.mqtt.core.util.TopicUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
 import java.util.Arrays;
 
-//mqtt消息内容
+/**
+ * @author canyue
+ * mqtt消息内容
+ */
 public class Message implements Serializable {
     private String name = "message";
     private int qos =0;
@@ -82,12 +82,5 @@ public class Message implements Serializable {
                 ", dup:" + dup +
                 ", msgId:" + msgId +
                 '}';
-    }
-
-    public static void main(String[] args) {
-        String str = "/test/topic/1";
-        String str2 = "/test//topic/1";
-        System.out.println(Arrays.toString(str.split("/")));
-        System.out.println(Arrays.toString(str2.split("/")));
     }
 }

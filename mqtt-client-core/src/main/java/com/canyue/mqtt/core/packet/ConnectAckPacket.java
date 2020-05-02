@@ -8,6 +8,8 @@ import java.io.DataInputStream;
 import java.io.IOException;
 
 /**
+ * @author canyue
+ *
  * 确认连接请求
  *      固定报头：
  *                        byte1：0x20
@@ -25,9 +27,10 @@ import java.io.IOException;
  *                      0x04 无效的用户名和密码
  *                      0x05  客户端未被授权连接到此服务器
  *                      0x06-0xff 保留
+ *
  */
 public class ConnectAckPacket extends BasePacket{
-    private final static PacketType type = PacketType.CONNACK_TYPE;
+    private final  PacketType type = PacketType.CONNACK_TYPE;
     private byte sessionPresent;
     private int returnCode;
 
@@ -40,7 +43,11 @@ public class ConnectAckPacket extends BasePacket{
     }
     private static Logger logger = LoggerFactory.getLogger(ConnectAckPacket.class);
 
-    //连接确认报文  固定报头+variableHeader
+    /**
+     * 连接确认报文  固定报头+variableHeader
+     * @param variableHeader
+     * @throws IOException
+     */
     public ConnectAckPacket(byte[] variableHeader) throws IOException {
         ByteArrayInputStream bais = new ByteArrayInputStream(variableHeader);
         DataInputStream dis = new DataInputStream(bais);
@@ -52,18 +59,22 @@ public class ConnectAckPacket extends BasePacket{
         
     }
 
+    @Override
     public byte[] getVariableHeader() throws IOException {
         return new byte[0];
     }
 
+    @Override
     public byte[] getPayload() throws IOException {
         return new byte[0];
     }
 
+    @Override
     public byte getFixHeaderFlag() {
         return 0;
     }
     
+    @Override
     public PacketType getType() {
         return type;
     }

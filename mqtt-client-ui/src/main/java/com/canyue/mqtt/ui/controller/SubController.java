@@ -1,28 +1,27 @@
 package com.canyue.mqtt.ui.controller;
 
 import com.canyue.mqtt.core.Message;
-import com.canyue.mqtt.core.client.impl.MqttClient;
 import com.canyue.mqtt.core.exception.MqttException;
-import com.canyue.mqtt.ui.DataHolder;
+import com.canyue.mqtt.ui.data.DataHolder;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 
+/**
+ * @author canyue
+ */
 public class SubController  {
     @FXML
-    private TextField tf_topicsFilter_sub;
+    private TextField tfTopicsFilterSub;
     @FXML
-    private Button btn_subscribe;
+    private ToggleGroup tgQosSub;
     @FXML
-    private ToggleGroup tg_qos_sub;
+    private ListView<Message> lvMsg;
     @FXML
-    private ListView<Message> lv_msg;
-    @FXML
-    private TextArea ta_msg_recv;
+    private TextArea taMsgRecv;
     private MainController mainController;
     private static Logger logger = LoggerFactory.getLogger(SubController.class);
     private DataHolder dataHolder;
@@ -30,10 +29,9 @@ public class SubController  {
     public void subscribe(ActionEvent actionEvent) {
         logger.debug("subscribe clicked!");
         try {
-            int qos =getQosFromTg(tg_qos_sub);
-            dataHolder.getMqttClient().subscribe(new String[]{tf_topicsFilter_sub.getText()},new int[]{qos});
-            //ta_history.appendText(sdf.format(new Date())+"INFO: 订阅(Topic:"+tf_topicsFilter_sub.getText()+",Qos:"+qos+")\n");
-            logger.info("topicsFilters:{},Qos:{}\t消息订阅成功！",tf_topicsFilter_sub.getText(),qos);
+            int qos =getQosFromTg(tgQosSub);
+            dataHolder.getMqttClient().subscribe(new String[]{tfTopicsFilterSub.getText()},new int[]{qos});
+            logger.info("topicsFilters:{},Qos:{}\t消息订阅成功！",tfTopicsFilterSub.getText(),qos);
         } catch (MqttException e) {
             logger.error("订阅失败:",e);
         }
@@ -55,7 +53,7 @@ public class SubController  {
     private void initialize(){
     }
 
-    public ListView<Message> getLv_msg() {
-        return lv_msg;
+    public ListView<Message> getLvMsg() {
+        return lvMsg;
     }
 }

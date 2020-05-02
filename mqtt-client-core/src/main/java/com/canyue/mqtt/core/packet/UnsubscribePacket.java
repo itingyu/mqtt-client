@@ -9,6 +9,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 
 /**
+ * @author canyue
  * 取消订阅：
  *      固定报头：
  *              byte1:0xa2
@@ -20,7 +21,7 @@ import java.io.IOException;
  *                  主题过滤器: mqtt-utf8编码
  */
 public class UnsubscribePacket extends BasePacket {
-    private final static PacketType type = PacketType.UNSUBSCRIBE_TYPE;
+    private final  PacketType type = PacketType.UNSUBSCRIBE_TYPE;
     private String[] topicsFilters;
     
     public UnsubscribePacket(byte[] data) {
@@ -47,22 +48,26 @@ public class UnsubscribePacket extends BasePacket {
         logger.debug("unsubscribe 报文生成完毕:" +
                 "\tmsgId:{};",msgId);
     }
+    @Override
     public byte[] getVariableHeader() throws IOException {
         return new byte[]{(byte)((msgId>>8)&0xff),(byte)((msgId>>0)&0xff)};
     }
+    @Override
     public byte[] getPayload() throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         DataOutputStream dos = new DataOutputStream(baos);
         int index = 0;
         while (index<topicsFilters.length){
-            PacketUtils.encodeMQTTUTF8(dos,topicsFilters[index]);
+            PacketUtils.encodeMqttUtf8(dos,topicsFilters[index]);
             index++;
         }
         return baos.toByteArray();
     }
+    @Override
     public byte getFixHeaderFlag() {
         return 2;
     }
+    @Override
     public PacketType getType() {
         return type;
     }

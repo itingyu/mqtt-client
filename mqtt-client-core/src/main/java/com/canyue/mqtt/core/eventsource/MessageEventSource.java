@@ -1,8 +1,12 @@
-package com.canyue.mqtt.core.EventSource;
+package com.canyue.mqtt.core.eventsource;
 
-import com.canyue.mqtt.core.event_object.MessageEvent;
+import com.canyue.mqtt.core.eventobject.MessageEvent;
 import com.canyue.mqtt.core.listener.MessageReceivedListener;
 
+
+/**
+ * @author canyue
+ */
 public class MessageEventSource {
 
 	private MessageReceivedListener listener ;
@@ -11,6 +15,6 @@ public class MessageEventSource {
 		this.listener = listener;
 	}
 	public void notifyListenerEvent(MessageEvent messageEvent){
-		this.listener.MessageArrived(messageEvent);
+		this.listener.messageArrived(messageEvent);
 	}
 }

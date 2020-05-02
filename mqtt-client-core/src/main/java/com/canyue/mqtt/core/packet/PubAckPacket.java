@@ -8,6 +8,7 @@ import java.io.DataInputStream;
 import java.io.IOException;
 
 /**
+ * @author canyue
  * 发布确认
  *      固定报头：
  *              byte1：0x40
@@ -18,7 +19,7 @@ import java.io.IOException;
 
 public class PubAckPacket extends BasePacket{
     
-    private final static PacketType type = PacketType.PUBACK_TYPE;
+    private final  PacketType type = PacketType.PUBACK_TYPE;
 
     public int getMsgId() {
         return msgId;
@@ -44,17 +45,21 @@ public class PubAckPacket extends BasePacket{
     public PubAckPacket(int msgId){
         this.msgId=msgId;
     }
+    @Override
     public byte[] getVariableHeader() throws IOException {
         return new byte[]{(byte)((msgId>>8)&0xff),(byte)((msgId>>0)&0xff)};
     }
 
+    @Override
     public byte[] getPayload() throws IOException {
         return new byte[0];
     }
 
+    @Override
     public byte getFixHeaderFlag() {
         return 0;
     }
+    @Override
     public PacketType getType() {
         return type;
     }

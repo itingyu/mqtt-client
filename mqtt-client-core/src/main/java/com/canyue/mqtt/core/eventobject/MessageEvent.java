@@ -1,9 +1,13 @@
-package com.canyue.mqtt.core.event_object;
+package com.canyue.mqtt.core.eventobject;
 
 import com.canyue.mqtt.core.Message;
 
 import java.util.EventObject;
 
+
+/**
+ * @author canyue
+ */
 public class MessageEvent extends EventObject {
 
 	/**

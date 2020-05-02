@@ -1,10 +1,10 @@
 package com.canyue.mqtt.core;
 
-import com.canyue.mqtt.core.EventSource.ClientStatusEventSource;
-import com.canyue.mqtt.core.EventSource.MessageEventSource;
+import com.canyue.mqtt.core.eventsource.ClientStatusEventSource;
+import com.canyue.mqtt.core.eventsource.MessageEventSource;
 import com.canyue.mqtt.core.callback.ClientCallback;
-import com.canyue.mqtt.core.event_object.ClientStatusEvent;
-import com.canyue.mqtt.core.event_object.MessageEvent;
+import com.canyue.mqtt.core.eventobject.ClientStatusEvent;
+import com.canyue.mqtt.core.eventobject.MessageEvent;
 import com.canyue.mqtt.core.exception.MqttPersistenceException;
 import com.canyue.mqtt.core.listener.ClientStatusListener;
 import com.canyue.mqtt.core.listener.MessageReceivedListener;
@@ -16,10 +16,17 @@ import org.slf4j.LoggerFactory;
 import java.util.*;
 
 
+/**
+ * @author canyue
+ */
 public class MessageQueue {
-    //需要发送的消息
+    /**
+     * 需要发送的消息
+     */
     private LinkedList<BasePacket> willSendQueue=new LinkedList<BasePacket>();
-    //待确认的消息，如果没收到确认，就重发
+    /**
+     * 待确认的消息，如果没收到确认，就重发
+     */
     private LinkedList<BasePacket> maybeReSendQueue=new LinkedList<BasePacket>();
     private ConnectConfig connectConfig;
     private final Object lock=new Object();
@@ -60,8 +67,13 @@ public class MessageQueue {
        }
         return packet;
     }
-    //connect  subscribe unsubscribe ping disconnect
-    ////publish publishRec publishRel publishComp publishAck
+
+    /**
+     *     connect  subscribe unsubscribe ping disconnect
+     *     publish publishRec publishRel publishComp publishAck
+     * @param basePacket
+     * @throws MqttPersistenceException
+     */
     public void handleSendMsg(BasePacket basePacket) throws MqttPersistenceException {
         if(basePacket instanceof PublishPacket){
             Message msg = ((PublishPacket) basePacket).getMessage();
@@ -86,8 +98,13 @@ public class MessageQueue {
             this.addLast(basePacket);
         }
     }
-    //conAck subscribeAck unsubscribeAck pingResp
-    //publish publishRec publishRel publishComp publishAck
+
+    /**
+     *     conAck subscribeAck unsubscribeAck pingResp
+     *     publish publishRec publishRel publishComp publishAck
+     * @param basePacket
+     * @throws MqttPersistenceException
+     */
     public void handleReceivedMsg(BasePacket basePacket) throws MqttPersistenceException {
         if(basePacket instanceof PublishPacket){
             logger.info("接收到一个publish报文,正在处理中....");

@@ -1,7 +1,10 @@
 package com.canyue.mqtt.core.exception;
 
-import java.io.IOException;
 
+
+/**
+ * @author canyue
+ */
 public class MqttPersistenceException extends MqttException {
     public MqttPersistenceException(){
         super();

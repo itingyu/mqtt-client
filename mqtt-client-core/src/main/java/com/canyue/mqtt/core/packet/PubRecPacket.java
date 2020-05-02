@@ -8,6 +8,7 @@ import java.io.DataInputStream;
 import java.io.IOException;
 
 /**
+ * @author canyue
  *发布收到：
  *      固定报头：
  *                    byte1:0x50
@@ -18,7 +19,7 @@ import java.io.IOException;
 
 public class PubRecPacket extends BasePacket{
     
-    private final static PacketType type = PacketType.PUBREC_TYPE;
+    private final  PacketType type = PacketType.PUBREC_TYPE;
     private static Logger logger = LoggerFactory.getLogger(PubRecPacket.class);
 
     public PubRecPacket(byte[] data) {
@@ -48,17 +49,21 @@ public class PubRecPacket extends BasePacket{
 
     private int msgId;
 
+    @Override
     public byte[] getVariableHeader() throws IOException {
         return new byte[]{(byte)((msgId>>8)&0xff),(byte)((msgId>>0)&0xff)};
     }
 
+    @Override
     public byte[] getPayload() throws IOException {
         return new byte[0];
     }
 
+    @Override
     public byte getFixHeaderFlag() {
         return 0;
     }
+    @Override
     public PacketType getType() {
         return type;
     }

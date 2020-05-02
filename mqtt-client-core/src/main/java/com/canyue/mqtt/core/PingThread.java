@@ -5,6 +5,9 @@ import com.canyue.mqtt.core.packet.PingReqPacket;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * @author canyue
+ */
 public class PingThread implements Runnable{
     private Object pingLock;
     private MessageQueue messageQueue;

@@ -2,15 +2,14 @@ package com.canyue.mqtt.ui.controller;
 
 import com.canyue.mqtt.core.Message;
 import com.canyue.mqtt.core.client.impl.MqttClient;
-import com.canyue.mqtt.core.event_object.ClientStatusEvent;
-import com.canyue.mqtt.core.event_object.MessageEvent;
+import com.canyue.mqtt.core.eventobject.ClientStatusEvent;
+import com.canyue.mqtt.core.eventobject.MessageEvent;
 import com.canyue.mqtt.core.exception.MqttException;
 import com.canyue.mqtt.core.listener.ClientStatusListener;
 import com.canyue.mqtt.core.listener.MessageReceivedListener;
 import com.canyue.mqtt.core.persistence.impl.FilePersistence;
-import com.canyue.mqtt.ui.DataHolder;
+import com.canyue.mqtt.ui.data.DataHolder;
 import com.canyue.mqtt.ui.config.ConnConfig;
-import com.canyue.mqtt.ui.DataFactory;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -28,72 +27,46 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.text.SimpleDateFormat;
 
+/**
+ * @author canyue
+ */
 public class ConnController  {
     @FXML
-    private TextField tf_socket;
+    private TextField tfSocket;
     @FXML
-    private Button btn_connect;
+    private Button btnConnect;
     @FXML
-    private Button btn_disconnect;
+    private Button btnDisconnect;
     @FXML
-    private Button btn_settings;
+    private Button btnSettings;
 
     private static Logger logger = LoggerFactory.getLogger(ConnController.class);
     private SimpleDateFormat sdf = new SimpleDateFormat ("E yyyy-MM-dd hh:mm:ss a zzz");
     private MainController mainController;
     private DataHolder dataHolder;
-    private ListView<Message> lv_msg;
+    private ListView<Message> lvMsg;
     private TabPane tabPane;
 
 
     public void connect(ActionEvent actionEvent) {
         logger.debug("正在连接建立");
-        initLv_msg();
+        initLvMsg();
         try {
             ConnConfig connConfig = dataHolder.getConnConfig();
-            tf_socket.setText(
+            tfSocket.setText(
                     connConfig.getHost()+":"+connConfig.getPort());
             MqttClient client = MqttClient.getBuilder()
                     .setHost(connConfig.getHost())
                     .setPort(connConfig.getPort())
-                    .setMessageReceivedListener(new MessageReceivedListener() {
-                        public void MessageArrived(MessageEvent messageEvent) {
-                            //在子线程更新UI，不然会报java.lang.IllegalStateException: Not on FX application thread
-                            Platform.runLater(new Runnable() {
-                                @Override
-                                public void run() {
-                                    lv_msg.getItems().add(messageEvent.getMessage());
-                                }
-                            });
-                        }
-                    })
-                    .setClientStatusListener(new ClientStatusListener() {
-                        @Override
-                        public void connectCompeted(ClientStatusEvent clientStatusEvent) {
-                            btn_connect.setDisable(true);
-                            btn_disconnect.setDisable(false);
-                            tabPane.setDisable(false);
-                            btn_settings.setDisable(true);
-                        }
-
-                        @Override
-                        public void shutdown(ClientStatusEvent clientStatusEvent) {
-                            btn_disconnect.setDisable(true);
-                            btn_connect.setDisable(false);
-                            tabPane.setDisable(true);
-                            btn_settings.setDisable(false);
-                            lv_msg.getItems().removeAll();
-                            logger.info("连接已断开！");
-                        }
-                    })
+                    .setMessageReceivedListener(new MyMessageReceivedListener())
+                    .setClientStatusListener(new MyClientStatusListener())
                     .setPersistence(new FilePersistence("C:\\Users\\ASUS\\Desktop\\dataDir"))
                     .build();
             dataHolder.setMqttClient(client);
             client.start();
-            client.connect(connConfig.getUsername(),connConfig.getPassword(),connConfig.getClientID(),null,connConfig.getKeepAlive(),connConfig.isCleanSession());
+            client.connect(connConfig.getUsername(),connConfig.getPassword(),connConfig.getClientId(),null,connConfig.getKeepAlive(),connConfig.isCleanSession());
             logger.debug("连接已建立");
-            this.mainController.setRunState(true);
-            //ta_history.appendText(sdf.format(new Date())+"INFO:  客户端(id:"+"MyMqttClientTestTool"+")连接到服务器\n");
+            this.dataHolder.setRunStatus(true);
         } catch (MqttException e) {
             logger.error("连接失败:",e);
         }
@@ -103,12 +76,12 @@ public class ConnController  {
         try {
             logger.debug("正在断开连接");
             dataHolder.getMqttClient().disconnect();
-            //ta_history.appendText(sdf.format(new Date())+"INFO: 断开连接\n");
-            btn_disconnect.setDisable(true);
-            btn_connect.setDisable(false);
+            btnDisconnect.setDisable(true);
+            btnConnect.setDisable(false);
             tabPane.setDisable(true);
-            btn_settings.setDisable(false);
-            lv_msg.getItems().removeAll();
+            btnSettings.setDisable(false);
+            lvMsg.getItems().removeAll();
+            dataHolder.setRunStatus(false);
             logger.info("连接已断开！");
         } catch (MqttException e) {
             logger.error("断开连接失败：",e);
@@ -136,11 +109,12 @@ public class ConnController  {
         }
         System.out.println("MyController.settings");
     }
-    public void initLv_msg(){
-        lv_msg.setPlaceholder(new Label("没有数据!"));
-        lv_msg.setFixedCellSize(60);
+    public void initLvMsg(){
+        lvMsg.setPlaceholder(new Label("没有数据!"));
+        lvMsg.setFixedCellSize(60);
         //自定义listView单元格
-        lv_msg.setCellFactory(new Callback<ListView<Message>, ListCell<Message>>() {
+        lvMsg.setCellFactory(new Callback<ListView<Message>, ListCell<Message>>() {
+            @Override
             public ListCell<Message> call(ListView<Message> param) {
                 ListCell<Message> listCell=new ListCell<Message>(){
                     @Override
@@ -149,16 +123,16 @@ public class ConnController  {
                         if(empty==false){
                             HBox hBox=new HBox(10);
                             Label topic = new Label(item.getTopic());
-                            Label msgid_label=new Label(item.getMsgId()+"");
-                            Label qos_label = new Label(item.getQos()+"");
-                            Label payload_label = null;
+                            Label msgIdLabel =new Label(item.getMsgId()+"");
+                            Label qosLabel = new Label(item.getQos()+"");
+                            Label payloadLabel = null;
                             try {
-                                payload_label = new Label(new String(item.getPayload(),"utf8"));
+                                payloadLabel = new Label(new String(item.getPayload(),"utf8"));
                             } catch (UnsupportedEncodingException e) {
                                 e.printStackTrace();
                             }
                             //Button bu = new Button(item.getMsgId()+"");
-                            hBox.getChildren().addAll(topic,msgid_label,qos_label,payload_label);
+                            hBox.getChildren().addAll(topic,msgIdLabel,qosLabel,payloadLabel);
                             this.setGraphic(hBox);
 
                         }
@@ -175,7 +149,7 @@ public class ConnController  {
     }
 
     private void init() {
-        this.lv_msg=this.mainController.getListView();
+        this.lvMsg=this.mainController.getListView();
         this.tabPane=this.mainController.getTabPane();
         dataHolder = mainController.getDataHolder();
     }
@@ -183,4 +157,38 @@ public class ConnController  {
     @FXML
     private void initialize(){
     }
+
+    class MyMessageReceivedListener implements MessageReceivedListener {
+        @Override
+        public void messageArrived(MessageEvent messageEvent) {
+            //在子线程更新UI，不然会报java.lang.IllegalStateException: Not on FX application thread
+            Platform.runLater(new Runnable() {
+                @Override
+                public void run() {
+                    lvMsg.getItems().add(messageEvent.getMessage());
+                }
+            });
+        }
+    }
+    class MyClientStatusListener implements ClientStatusListener {
+        @Override
+        public void connectCompeted(ClientStatusEvent clientStatusEvent) {
+            btnConnect.setDisable(true);
+            btnDisconnect.setDisable(false);
+            tabPane.setDisable(false);
+            btnSettings.setDisable(true);
+        }
+
+        @Override
+        public void shutdown(ClientStatusEvent clientStatusEvent) {
+            btnDisconnect.setDisable(true);
+            btnConnect.setDisable(false);
+            tabPane.setDisable(true);
+            btnSettings.setDisable(false);
+            lvMsg.getItems().removeAll();
+            logger.info("连接已断开！");
+        }
+    }
 }
+
+

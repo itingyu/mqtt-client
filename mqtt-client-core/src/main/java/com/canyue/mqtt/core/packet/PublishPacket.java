@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import java.io.*;
 
 /**
+ * @author canyue
  *发布消息：
  *      固定报头：
  *             byte1：   0 0 1 1 DUP Qos-H Qos-L RETAIN
@@ -33,7 +34,7 @@ public class PublishPacket extends BasePacket{
     public Message getMessage() {
         return message;
     }
-    private final static PacketType type = PacketType.PUBLISH_TYPE;
+    private final  PacketType type = PacketType.PUBLISH_TYPE;
     private Message message;
     public int getMsgId() {
         return msgId;
@@ -59,8 +60,10 @@ public class PublishPacket extends BasePacket{
                 this.msgId = dis.readUnsignedShort();
                 this.message.setMsgId(this.msgId);
             }
-            int encodedTopicLength = topic.getBytes("UTF-8").length+2;//utf-8字符串长度+2字节长度
-            int payloadLength = data.length-(encodedTopicLength+(this.message.getQos()==0?0:2));//剩余长度-（主题长度+报文标识符长度）=有效载荷长度
+            //utf-8字符串长度+2字节长度
+            int encodedTopicLength = topic.getBytes("UTF-8").length+2;
+            //剩余长度-（主题长度+报文标识符长度）=有效载荷长度
+            int payloadLength = data.length-(encodedTopicLength+(this.message.getQos()==0?0:2));
             byte[] payload = new byte[payloadLength];
             dis.readFully(payload,0,payloadLength);
             this.message.setPayload(payload);
@@ -82,20 +85,23 @@ public class PublishPacket extends BasePacket{
                 "\tmessage:{};",msgId,message);
     }
 
+    @Override
     public byte[] getVariableHeader() throws IOException {
         ByteArrayOutputStream baos=new ByteArrayOutputStream();
         DataOutputStream dos=new DataOutputStream(baos);
-        PacketUtils.encodeMQTTUTF8(dos,message.getTopic());
+        PacketUtils.encodeMqttUtf8(dos,message.getTopic());
         if(message.getQos()>0){
             dos.writeShort(msgId);
         }
         return baos.toByteArray();
     }
 
+    @Override
     public byte[] getPayload() throws IOException {
         return message.getPayload();
     }
 
+    @Override
     public byte getFixHeaderFlag() {
         byte flag = 0;
         if(message.isDup()){
@@ -107,6 +113,7 @@ public class PublishPacket extends BasePacket{
         }
         return flag;
     }
+    @Override
     public PacketType getType() {
         return type;
     }

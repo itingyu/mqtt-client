@@ -8,6 +8,7 @@ import java.io.DataInputStream;
 import java.io.IOException;
 
 /**
+ * @author canyue
  * 发布释放：
  *      固定报头：
  *              byte1:0x62
@@ -18,7 +19,7 @@ import java.io.IOException;
 
 public class PubRelPacket extends BasePacket {
     
-    private final static PacketType type = PacketType.PUBREL_TYPE;
+    private final  PacketType type = PacketType.PUBREL_TYPE;
 
     public int getMsgId() {
         return msgId;
@@ -47,17 +48,21 @@ public class PubRelPacket extends BasePacket {
                 "\tmsgId:{};",msgId);
     }
 
+    @Override
     public byte[] getVariableHeader() throws IOException {
         return new byte[]{(byte)((msgId>>8)&0xff),(byte)((msgId>>0)&0xff)};
     }
 
+    @Override
     public byte[] getPayload() throws IOException {
         return new byte[0];
     }
 
+    @Override
     public byte getFixHeaderFlag() {
         return 2;
     }
+    @Override
     public PacketType getType() {
         return type;
     }

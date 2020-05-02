@@ -1,5 +1,9 @@
 package com.canyue.mqtt.core.packet;
 
+/**
+ * @author canyue
+ */
+
 public enum PacketType {
 	//mqtt 14种报文类型
 	CONNECT_TYPE(1,"connect"),

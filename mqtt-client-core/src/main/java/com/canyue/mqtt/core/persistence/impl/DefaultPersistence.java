@@ -1,47 +1,47 @@
 package com.canyue.mqtt.core.persistence.impl;
 
-import com.canyue.mqtt.core.Message;
-import com.canyue.mqtt.core.exception.MqttPersistenceException;
 import com.canyue.mqtt.core.packet.BasePacket;
 import com.canyue.mqtt.core.persistence.IPersistence;
 
 import java.util.List;
 
-//do nothing
+/**
+ * @author canyue
+ */
 public class DefaultPersistence implements IPersistence {
 
     @Override
-    public void open(String clientId) throws MqttPersistenceException {
+    public void open(String clientId) {
 
     }
 
     @Override
-    public void close() throws MqttPersistenceException {
+    public void close() {
 
     }
 
     @Override
-    public void clear() throws MqttPersistenceException {
+    public void clear() {
 
     }
 
     @Override
-    public Object find(String string) throws MqttPersistenceException {
+    public Object find(String string) {
         return null;
     }
 
     @Override
-    public List<BasePacket> getAllNeed2Retry() throws MqttPersistenceException {
+    public List<BasePacket> getAllNeed2Retry() {
         return null;
     }
 
     @Override
-    public void save(String string, Object object) throws MqttPersistenceException {
+    public void save(String string, Object object) {
 
     }
 
     @Override
-    public void remove(String string) throws MqttPersistenceException {
+    public void remove(String string) {
 
     }
 }

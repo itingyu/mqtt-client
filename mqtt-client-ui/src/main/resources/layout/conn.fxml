@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import java.lang.*?>
-<?import java.util.*?>
 <?import javafx.scene.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
@@ -14,18 +12,18 @@
       maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="30.0" prefWidth="869.0">
         <children>
             <Label prefHeight="30.0" prefWidth="58.0" text="服务器:" />
-            <TextField fx:id="tf_socket" alignment="CENTER" editable="false" focusTraversable="false" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" nodeOrientation="RIGHT_TO_LEFT" prefHeight="30.0" prefWidth="150.0"  text="127.0.0.1:1883">
+            <TextField fx:id="tfSocket" alignment="CENTER" editable="false" focusTraversable="false" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" nodeOrientation="RIGHT_TO_LEFT" prefHeight="30.0" prefWidth="150.0"  text="127.0.0.1:1883">
                 <font>
                     <Font name="System Bold" size="15.0" />
                 </font>
                 <cursor>
                     <Cursor fx:constant="DEFAULT" />
                 </cursor></TextField>
-            <Button id="btn_connect" fx:id="btn_connect" mnemonicParsing="false" onAction="#connect"  text="连接">
+            <Button  fx:id="btnConnect" mnemonicParsing="false" onAction="#connect"  text="连接">
                 <cursor>
                     <Cursor fx:constant="HAND" />
                 </cursor></Button>
-            <Button id="btn_disconnect" fx:id="btn_disconnect" disable="true" mnemonicParsing="false" onAction="#disconnect" text="断开">
+            <Button  fx:id="btnDisconnect" disable="true" mnemonicParsing="false" onAction="#disconnect" text="断开">
                 <HBox.margin>
                     <Insets left="10.0" />
                 </HBox.margin>
@@ -33,7 +31,7 @@
                     <Cursor fx:constant="HAND" />
                 </cursor>
             </Button>
-            <Button id="btn_settings" fx:id="btn_settings" mnemonicParsing="false" onAction="#settings"  text="设置">
+            <Button  fx:id="btnSettings" mnemonicParsing="false" onAction="#settings"  text="设置">
                 <HBox.margin>
                     <Insets left="20.0" />
                 </HBox.margin>

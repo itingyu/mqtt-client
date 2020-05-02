@@ -10,6 +10,12 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
+
+
+
+/**
+ * @author canyue
+ */
 public class ReceiverThread implements Runnable{
   
     private  MessageQueue messageQueue;
@@ -24,6 +30,7 @@ public class ReceiverThread implements Runnable{
         this.messageQueue = messageQueue;
     }
 
+    @Override
     public void run() {
         logger.info("receiverThread已启动!");
         DataInputStream dis = new DataInputStream(is);

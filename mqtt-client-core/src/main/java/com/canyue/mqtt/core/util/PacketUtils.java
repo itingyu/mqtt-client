@@ -6,6 +6,9 @@ import org.slf4j.LoggerFactory;
 
 import java.io.*;
 
+/**
+ * @author canyue
+ */
 public class PacketUtils {
 	public static final int MAX_REMAINING_LENGTH = 268435455;
 	private PacketUtils() {
@@ -33,7 +36,8 @@ public class PacketUtils {
 		switch (type){
 			case 1:return new ConnectPacket(data);
 			case 2:return new ConnectAckPacket(data);
-			case 3:return new PublishPacket(flag,data);//publish报文需要固定报文flag
+			//publish报文需要固定报文flag
+			case 3:return new PublishPacket(flag,data);
 			case 4:return new PubAckPacket(data);
 			case 5:return new PubRecPacket(data);
 			case 6:return new PubRelPacket(data);
@@ -57,16 +61,19 @@ public class PacketUtils {
 			throw new IllegalArgumentException("非法的剩余长度!");
 		}
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		int count=0;//记录字节数
+		//记录字节数
+		int count=0;
 		do{
 			byte data = (byte)(remLen%128);
 			remLen/=128;
 			if(remLen>0){
-				data|=0x80;//后面还有字节，最高位置1
+				//后面还有字节，最高位置1
+				data|=0x80;
 			}
 			baos.write(data);
 			count++;
-		}while((remLen>0)&&(count<4));//规定了最多四个字节
+			//规定了最多四个字节
+		}while((remLen>0)&&(count<4));
 		return baos.toByteArray();
 	}
 	/**
@@ -81,9 +88,11 @@ public class PacketUtils {
 		int base=1;
 		do{
 			data= in.readByte();
-			remLen+=(data&0x7f)*base; //data低七位是高位数据
+			//data低七位是高位数据
+			remLen+=(data&0x7f)*base;
 			base*=128;
-		}while((data&0x80)!=0);//最高位不为0，表示还有字节
+			//最高位不为0，表示还有字节
+		}while((data&0x80)!=0);
 		
 		if(remLen>MAX_REMAINING_LENGTH||remLen<0){
 			logger.debug("broker发来不合法长度的报文!");
@@ -101,11 +110,13 @@ public class PacketUtils {
 	 * @param rawString
 	 * @throws IOException
 	 */
-	public static void encodeMQTTUTF8(DataOutputStream dos, String rawString) throws IOException {
+	public static void encodeMqttUtf8(DataOutputStream dos, String rawString) throws IOException {
 		byte[] rawStringBytes = rawString.getBytes("UTF8");
 		int rawStringLength = rawStringBytes.length;
-		dos.write((byte)((rawStringLength>>>8)&0xff));// 9-16位
-		dos.write((byte)((rawStringLength>>>0)&0xff));//0-8位
+		// 9-16位
+		dos.write((byte)((rawStringLength>>>8)&0xff));
+		//0-8位
+		dos.write((byte)((rawStringLength>>>0)&0xff));
 		dos.write(rawStringBytes);
 	}
 	/**
@@ -115,7 +126,8 @@ public class PacketUtils {
 	 * @throws IOException
 	 */
 	public static String decodeMQTTUTF8(DataInputStream dis) throws IOException {
-		int length = dis.readUnsignedShort();//长度占两字节,非负
+		//长度占两字节,非负
+		int length = dis.readUnsignedShort();
 		byte[] bytes=new byte[length];
 		dis.readFully(bytes,0,length);
 		return new String(bytes,"UTF8");

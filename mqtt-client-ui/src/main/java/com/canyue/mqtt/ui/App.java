@@ -9,19 +9,21 @@ import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
-
 import java.net.URL;
 
-
-public class MainFrame extends Application {
+/**
+ * @author canyue
+ */
+public class App extends Application {
 
     public static void main(String[] args) {
-       Application.launch(MainFrame.class,args);
+       Application.launch(App.class,args);
     }
 
+    @Override
     public void start(Stage primaryStage) throws Exception {
 
-        URL url = MainFrame.class.getClassLoader().getResource("layout/main.fxml");
+        URL url = App.class.getClassLoader().getResource("layout/main.fxml");
         FXMLLoader fxmlLoader = new FXMLLoader();
         fxmlLoader.setLocation(url);
         Scene scene = new Scene(fxmlLoader.load());

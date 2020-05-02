@@ -1,7 +1,9 @@
 package com.canyue.mqtt.core.exception;
 
 
-//RuntimeException
+/**
+ * @author canyue
+ */
 public class MqttIllegalArgumentException extends MqttException {
     public MqttIllegalArgumentException(){
         super();
