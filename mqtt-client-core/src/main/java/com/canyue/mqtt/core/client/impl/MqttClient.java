@@ -18,7 +18,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author canyue
@@ -264,8 +266,8 @@ public class MqttClient implements IMqttClient {
     }
     private void saveMsgId(){
         FileOutputStream fos=null;
-        DataOutputStream dos  = null;
-        File f = new File( System.getProperty("user.dir"),connectConfig.getClientId()+"msgId.data");
+        DataOutputStream dos = null;
+        File f = new File(System.getProperty("user.dir"), ".mqtt/" + connectConfig.getClientId() + "/data/id.data");
         if(connectConfig.isCleanSession()){
             f.delete();
             return;
@@ -295,7 +297,7 @@ public class MqttClient implements IMqttClient {
     public void initMsgId(){
         FileInputStream fis = null;
         DataInputStream dis = null;
-        File f = new File( System.getProperty("user.dir"),connectConfig.getClientId()+"msgId.data");
+        File f = new File(System.getProperty("user.dir"), ".mqtt/" + connectConfig.getClientId() + "/data/id.data");
         if(f.exists()&&f.isFile()){
             try {
                 fis = new FileInputStream(f);

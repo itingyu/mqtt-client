@@ -22,7 +22,7 @@ public class SubController  {
     private ListView<Message> lvMsg;
     @FXML
     private TextArea taMsgRecv;
-    private MainController mainController;
+    private ClientController clientController;
     private static Logger logger = LoggerFactory.getLogger(SubController.class);
     private DataHolder dataHolder;
 
@@ -31,26 +31,30 @@ public class SubController  {
         try {
             int qos =getQosFromTg(tgQosSub);
             dataHolder.getMqttClient().subscribe(new String[]{tfTopicsFilterSub.getText()},new int[]{qos});
-            logger.info("topicsFilters:{},Qos:{}\t消息订阅成功！",tfTopicsFilterSub.getText(),qos);
+            logger.info("topicsFilters:{},Qos:{}\t消息订阅成功！", tfTopicsFilterSub.getText(), qos);
         } catch (MqttException e) {
-            logger.error("订阅失败:",e);
+            logger.error("订阅失败:", e);
         }
     }
 
 
-    private int getQosFromTg(ToggleGroup tg){
-        return Integer.parseInt(((RadioButton) tg.getSelectedToggle()).getText().replace("Qos",""));
+    private int getQosFromTg(ToggleGroup tg) {
+        return Integer.parseInt(((RadioButton) tg.getSelectedToggle()).getText().replace("Qos", ""));
     }
-    public void injectMainController(MainController mainController) {
-        this.mainController = mainController;
+
+    public void injectMainController(ClientController clientController) {
+        System.out.println("SubController.injectMainController");
+        this.clientController = clientController;
         init();
     }
-    private void init(){
-        this.dataHolder=mainController.getDataHolder();
+
+    private void init() {
+        this.dataHolder = clientController.getDataHolder();
 
     }
+
     @FXML
-    private void initialize(){
+    private void initialize() {
     }
 
     public ListView<Message> getLvMsg() {

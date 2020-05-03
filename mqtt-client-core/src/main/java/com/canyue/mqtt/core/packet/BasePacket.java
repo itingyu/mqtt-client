@@ -1,7 +1,6 @@
 package com.canyue.mqtt.core.packet;
 
 import com.canyue.mqtt.core.util.PacketUtils;
-import com.sun.deploy.security.ValidationState;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;

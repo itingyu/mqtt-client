@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.*?>
+<?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
+<?import javafx.scene.Cursor?>
 <?import javafx.scene.layout.*?>
-
-<?import javafx.geometry.Insets?>
 <Tab xmlns="http://javafx.com/javafx"
      xmlns:fx="http://javafx.com/fxml"
      fx:controller="com.canyue.mqtt.ui.controller.SubController"
@@ -48,10 +47,12 @@
                 </HBox>
                 <HBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="512.0" prefWidth="869.0" VBox.vgrow="ALWAYS">
                     <children>
-                        <ListView  fx:id="lvMsg" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" style="-fx-background-color: #eeeeee; -fx-background-radius: 20;" HBox.hgrow="ALWAYS">
+                        <ListView fx:id="lvMsg" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308"
+                                  style="-fx-background-color: #eeeeee; -fx-background-radius: 20;" HBox.hgrow="ALWAYS">
                             <opaqueInsets>
-                                <Insets />
-                            </opaqueInsets></ListView>
+                                <Insets/>
+                            </opaqueInsets>
+                        </ListView>
                         <TextArea fx:id="taMsgRecv" editable="false" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="485.0" prefWidth="358.0" promptText="这里会展示收到的消息。。。" style="-fx-background-color: #dddddd;" HBox.hgrow="ALWAYS">
                             <cursor>
                                 <Cursor fx:constant="DEFAULT" />

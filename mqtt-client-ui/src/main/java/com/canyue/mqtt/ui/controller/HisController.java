@@ -7,15 +7,17 @@ import javafx.scene.control.TextArea;
 /**
  * @author canyue
  */
-public class HisController{
+public class HisController {
     @FXML
     private TextArea taHistory;
-    private MainController mainController;
+    private ClientController clientController;
 
-    public void injectMainController(MainController mainController) {
-        this.mainController = mainController;
+    public void injectMainController(ClientController clientController) {
+        System.out.println("HisController.injectMainController");
+        this.clientController = clientController;
     }
+
     @FXML
-    private void initialize(){
+    private void initialize() {
     }
 }

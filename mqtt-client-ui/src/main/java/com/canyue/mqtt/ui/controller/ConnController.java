@@ -8,8 +8,9 @@ import com.canyue.mqtt.core.exception.MqttException;
 import com.canyue.mqtt.core.listener.ClientStatusListener;
 import com.canyue.mqtt.core.listener.MessageReceivedListener;
 import com.canyue.mqtt.core.persistence.impl.FilePersistence;
-import com.canyue.mqtt.ui.data.DataHolder;
 import com.canyue.mqtt.ui.config.ConnConfig;
+import com.canyue.mqtt.ui.data.DataFactory;
+import com.canyue.mqtt.ui.data.DataHolder;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -41,11 +42,12 @@ public class ConnController  {
     private Button btnSettings;
 
     private static Logger logger = LoggerFactory.getLogger(ConnController.class);
-    private SimpleDateFormat sdf = new SimpleDateFormat ("E yyyy-MM-dd hh:mm:ss a zzz");
-    private MainController mainController;
+    private SimpleDateFormat sdf = new SimpleDateFormat("E yyyy-MM-dd hh:mm:ss a zzz");
+    private ClientController clientController;
     private DataHolder dataHolder;
     private ListView<Message> lvMsg;
     private TabPane tabPane;
+
 
 
     public void connect(ActionEvent actionEvent) {
@@ -60,7 +62,7 @@ public class ConnController  {
                     .setPort(connConfig.getPort())
                     .setMessageReceivedListener(new MyMessageReceivedListener())
                     .setClientStatusListener(new MyClientStatusListener())
-                    .setPersistence(new FilePersistence("C:\\Users\\ASUS\\Desktop\\dataDir"))
+                    .setPersistence(new FilePersistence())
                     .build();
             dataHolder.setMqttClient(client);
             client.start();
@@ -101,7 +103,7 @@ public class ConnController  {
             configController.setConnConfig(dataHolder.getConnConfig());
             configController.initData();
             configStage.initModality(Modality.WINDOW_MODAL);
-            configStage.initOwner(mainController.getMainStage());
+            configStage.initOwner(clientController.getMainStage());
             configStage.setTitle("连接配置");
             configStage.show();
         } catch (IOException e) {
@@ -143,15 +145,18 @@ public class ConnController  {
         });
     }
 
-    public void injectMainController(MainController mainController) {
-        this.mainController = mainController;
+    public void injectMainController(ClientController clientController) {
+        System.out.println("ConnController.injectMainController");
+        this.clientController = clientController;
         init();
     }
 
     private void init() {
-        this.lvMsg=this.mainController.getListView();
-        this.tabPane=this.mainController.getTabPane();
-        dataHolder = mainController.getDataHolder();
+        this.lvMsg = this.clientController.getListView();
+        this.tabPane = this.clientController.getTabPane();
+        dataHolder = DataFactory.dataMap.get(clientController);
+        System.out.println(clientController + "====conn");
+        System.out.println(dataHolder);
     }
 
     @FXML

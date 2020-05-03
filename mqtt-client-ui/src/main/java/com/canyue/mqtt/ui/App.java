@@ -9,6 +9,7 @@ import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
+
 import java.net.URL;
 
 /**
@@ -33,10 +34,9 @@ public class App extends Application {
         primaryStage.show();
         MainController mainController = fxmlLoader.getController();
         mainController.setMainStage(primaryStage);
-        primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
+        primaryStage.setOnHidden(new EventHandler<WindowEvent>() {
             @Override
             public void handle(WindowEvent event) {
-                mainController.close();
                 Platform.exit();
             }
         });

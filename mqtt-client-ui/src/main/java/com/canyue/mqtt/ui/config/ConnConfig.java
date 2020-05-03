@@ -3,7 +3,9 @@ package com.canyue.mqtt.ui.config;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.Properties;
 import java.util.Set;
 
@@ -20,41 +22,12 @@ public class ConnConfig {
     private  String username;
     private  String password;
     private  int willMessageQos;
-    private  boolean willMessageIsRetain;
-    private  final Logger logger= LoggerFactory.getLogger(ConnConfig.class);
-    private Properties properties= new Properties();
+    private boolean willMessageIsRetain;
+    private static final Logger logger = LoggerFactory.getLogger(ConnConfig.class);
+    private Properties properties = new Properties();
     private File file;
      public ConnConfig(){
-             String path = ConnConfig.class.getClassLoader().getResource("config/ConnConfig.properties").getPath();
-                InputStream inputStream = null;
-             System.out.println(path);
-             try {
-                 file = new File(path);
-                 inputStream = new FileInputStream(file);
-                 properties.load(inputStream);
-                 Set<String>  strings=properties.stringPropertyNames();
-                 for (String s : strings) {
-                     System.out.println(s+"======="+properties.getProperty(s));
-                 }
-                 host=properties.getProperty("host","127.0.0.1");
-                 port=Integer.valueOf(properties.getProperty("port","1883"));
-                 clientId=properties.getProperty("clientID");
-                 keepAlive=Integer.valueOf(properties.getProperty("keepAlive","20"));
-                 cleanSession=Boolean.valueOf(properties.getProperty("cleanSession","true"));
-                 reconnect=Boolean.valueOf(properties.getProperty("reconnect","true"));
-                 username=properties.getProperty("username","");
-                 password=properties.getProperty("password","");
-                 willMessageQos=Integer.valueOf(properties.getProperty("willMessage.qos","0"));
-                 willMessageIsRetain=Boolean.valueOf(properties.getProperty("willMessage.isRetain","true"));
-             } catch (IOException e) {
-                 logger.error("配置文件加载失败！",e);
-             }finally {
-                 try {
-                     inputStream.close();
-                 } catch (IOException e) {
-                     e.printStackTrace();
-                 }
-             }
+
      }
 
     public String getHost() {
@@ -136,20 +109,47 @@ public class ConnConfig {
     public void setWillMessageIsRetain(boolean willMessageIsRetain) {
         this.willMessageIsRetain = willMessageIsRetain;
     }
-    public void saveConfig(){
-        properties.setProperty("host",host);
+
+    public static ConnConfig getDefaultConnConfig() {
+        ConnConfig connConfig = new ConnConfig();
+        try {
+            connConfig.properties.load(ConnConfig.class.getClassLoader().getResourceAsStream("default_config.properties"));
+            logger.info("加载默认配置文件:");
+            Properties properties = connConfig.properties;
+            Set<String> strings = properties.stringPropertyNames();
+            for (String s : strings) {
+                logger.debug("{}={}", s, properties.getProperty(s));
+            }
+            connConfig.host = properties.getProperty("host", "127.0.0.1");
+            connConfig.port = Integer.valueOf(properties.getProperty("port", "1883"));
+            connConfig.clientId = properties.getProperty("clientID");
+            connConfig.keepAlive = Integer.valueOf(properties.getProperty("keepAlive", "20"));
+            connConfig.cleanSession = Boolean.valueOf(properties.getProperty("cleanSession", "true"));
+            connConfig.reconnect = Boolean.valueOf(properties.getProperty("reconnect", "true"));
+            connConfig.username = properties.getProperty("username", "");
+            connConfig.password = properties.getProperty("password", "");
+            connConfig.willMessageQos = Integer.valueOf(properties.getProperty("willMessage.qos", "0"));
+            connConfig.willMessageIsRetain = Boolean.valueOf(properties.getProperty("willMessage.isRetain", "true"));
+        } catch (IOException e) {
+            logger.error("配置文件加载失败！", e);
+        }
+        return connConfig;
+    }
+
+    public void saveConfig() {
+        properties.setProperty("host", host);
         properties.setProperty("port", String.valueOf(port));
-        properties.setProperty("clientID",clientId);
+        properties.setProperty("clientID", clientId);
         properties.setProperty("keepAlive", String.valueOf(keepAlive));
         properties.setProperty("cleanSession", String.valueOf(cleanSession));
         properties.setProperty("reconnect", String.valueOf(reconnect));
-        properties.setProperty("username",username);
-        properties.setProperty("password",password);
+        properties.setProperty("username", username);
+        properties.setProperty("password", password);
         properties.setProperty("willMessage.qos", String.valueOf(willMessageQos));
         properties.setProperty("willMessage.isRetain", String.valueOf(willMessageIsRetain));
-
         try {
-            properties.store(new FileOutputStream(file),"保存");
+            file = new File(System.getProperty("user.dir"), ".mqtt/" + clientId + "/config.properties");
+            properties.store(new FileOutputStream(file), clientId + " connect config");
         } catch (IOException e) {
             logger.info("配置保存失败",e);
         }

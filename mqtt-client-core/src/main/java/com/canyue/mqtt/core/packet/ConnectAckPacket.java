@@ -45,6 +45,7 @@ public class ConnectAckPacket extends BasePacket{
 
     /**
      * 连接确认报文  固定报头+variableHeader
+     *
      * @param variableHeader
      * @throws IOException
      */
@@ -55,8 +56,8 @@ public class ConnectAckPacket extends BasePacket{
         this.returnCode = dis.readUnsignedByte();
         logger.debug("connect ack报文解析完毕:\n" +
                 "\tsessionPresent:{}," +
-                "\treturnCode:{};",sessionPresent,returnCode);
-        
+                "\treturnCode:{};", sessionPresent, returnCode);
+
     }
 
     @Override

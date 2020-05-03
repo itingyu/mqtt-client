@@ -16,24 +16,29 @@ import java.util.List;
  * @author canyue
  */
 public class FilePersistence implements IPersistence {
-    private String userDir = System.getProperty("user.dir");
+    private static String userDir = System.getProperty("user.dir");
     private File dataDir = null;
     private File workDir = null;
-    private final Logger logger= LoggerFactory.getLogger(FilePersistence.class);
-    public FilePersistence(String dirString){
-        dataDir = new File(dirString);
-        logger.info("使用数据目录:{}",dataDir.getAbsolutePath());
+    private final Logger logger = LoggerFactory.getLogger(FilePersistence.class);
+
+    public FilePersistence() {
+        this(userDir);
+    }
+
+    public FilePersistence(String dirString) {
+        dataDir = new File(dirString, ".mqtt");
+        logger.info("使用数据目录:{}", dataDir.getAbsolutePath());
     }
 
     @Override
     public void open(String clientId) throws MqttPersistenceException {
-        if(dataDir.exists()&&!dataDir.isDirectory()){
+        if (dataDir.exists() && !dataDir.isDirectory()) {
             throw new MqttPersistenceException("不是目录但已存在!");
-        }else if(!dataDir.exists()){
+        } else if (!dataDir.exists()) {
             dataDir.mkdirs();
         }
         if(workDir==null){
-            workDir=new File(dataDir,clientId.replaceAll("-",""));
+            workDir = new File(dataDir, clientId + "/data");
             workDir.mkdirs();
         }
         logger.info("workDir已打开:{}",workDir.getAbsolutePath());

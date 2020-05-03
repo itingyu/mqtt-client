@@ -6,8 +6,6 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.stage.Stage;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.util.UUID;
 
 /**
@@ -43,15 +41,19 @@ public class ConfigController {
     @FXML
     private Button btnConfigCancel;
 
+    public boolean add = false;
+
     private ConnConfig connConfig;
-    
+
     private Stage stage;
+
     public void generateClientId(ActionEvent actionEvent) {
         UUID uuid = UUID.randomUUID();
-        String clientId = uuid.toString().replaceAll("-","");
+        String clientId = uuid.toString().replaceAll("-", "");
         this.tfClientId.setText(clientId);
     }
-    public void setStage(Stage stage){
+
+    public void setStage(Stage stage) {
         this.stage = stage;
     }
 
@@ -67,6 +69,7 @@ public class ConfigController {
         connConfig.setPassword(pfConfigPassword.getText());
        // connConfig.setWillMessageQos();
         connConfig.setWillMessageIsRetain(rbConfigWillMessageIsRetain.isSelected());
+        add = true;
         stage.close();
     }
 
@@ -77,11 +80,16 @@ public class ConfigController {
     public void setConnConfig(ConnConfig connConfig) {
         this.connConfig = connConfig;
     }
-    public void initData(){
+
+    public ConnConfig getConnConfig() {
+        return connConfig;
+    }
+
+    public void initData() {
         tfConfigHost.setText(connConfig.getHost());
-        tfConfigPort.setText(connConfig.getPort()+"");
+        tfConfigPort.setText(connConfig.getPort() + "");
         tfClientId.setText(connConfig.getClientId());
-        tfConfigKeepAlive.setText(connConfig.getKeepAlive()+"");
+        tfConfigKeepAlive.setText(connConfig.getKeepAlive() + "");
 
         rbConfigCleanSession.setSelected(connConfig.isCleanSession());
         rbConfigReconnect.setSelected(connConfig.isReconnect());
