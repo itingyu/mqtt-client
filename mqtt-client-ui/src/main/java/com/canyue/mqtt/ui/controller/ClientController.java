@@ -8,6 +8,7 @@ import javafx.scene.control.ListView;
 import javafx.scene.control.TabPane;
 import javafx.stage.Stage;
 
+
 /**
  * @author canyue
  */
@@ -28,15 +29,13 @@ public class ClientController {
 
     @FXML
     private void initialize() {
-        System.out.println("============");
-
+        System.out.println("ClientController.initialize");
         DataFactory.dataMap.put(this, dataHolder);
-        System.out.println(dataHolder);
-        System.out.println(this + "===");
         connController.injectMainController(this);
         pubController.injectMainController(this);
         subController.injectMainController(this);
         hisController.injectMainController(this);
+
 
     }
 
@@ -56,8 +55,12 @@ public class ClientController {
         return tabPane;
     }
 
-    public ListView<Message> getListView() {
-        return this.subController.getLvMsg();
+    public ListView<Message> getLvMessage() {
+        return this.subController.getLvMessage();
+    }
+
+    public ListView<String> getLvTopicFilter() {
+        return this.subController.getLvTopicFilter();
     }
 
     public void close() {

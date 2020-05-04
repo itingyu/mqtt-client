@@ -1,6 +1,6 @@
 package com.canyue.mqtt.core.eventsource;
 
-import com.canyue.mqtt.core.eventobject.ClientStatusEvent;
+import com.canyue.mqtt.core.event.ClientStatusEvent;
 import com.canyue.mqtt.core.listener.ClientStatusListener;
 
 /**
@@ -16,8 +16,12 @@ public class ClientStatusEventSource {
         int statusCode = clientStatusEvent.getStatusCode();
         if(statusCode==ClientStatusEvent.SHUTDOWN){
             this.listener.shutdown(clientStatusEvent);
-        }else if(statusCode==ClientStatusEvent.RUN){
+        }else if (statusCode == ClientStatusEvent.RUN) {
             this.listener.connectCompeted(clientStatusEvent);
+        } else if (statusCode == ClientStatusEvent.SUBSCRIBE_COMPUTED) {
+            this.listener.subscribeCompeted(clientStatusEvent);
+        } else if (statusCode == ClientStatusEvent.UNSUBSCRIBE_COMPUTED) {
+            this.listener.unsubscribeCompeted(clientStatusEvent);
         }
     }
 }

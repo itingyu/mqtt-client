@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<VBox xmlns:fx="http://javafx.com/fxml/1" prefHeight="50.0" prefWidth="230.0"
+      xmlns="http://javafx.com/javafx/10.0.2-internal"
+      fx:controller="com.canyue.mqtt.ui.controller.TopicFilterCellController">
+    <HBox prefHeight="25" prefWidth="230">
+        <Label fx:id="lbTopicFilter" prefWidth="190.0" text="#"/>
+        <Label fx:id="lbMessageCount" alignment="CENTER_RIGHT" text="0"/>
+    </HBox>
+    <Button fx:id="btnUnsubscribe" onAction="#unsubscribe" text="unsubscribe"/>
+
+</VBox>

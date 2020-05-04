@@ -1,10 +1,10 @@
 package com.canyue.mqtt.core;
 
+import com.canyue.mqtt.core.callback.ClientCallback;
+import com.canyue.mqtt.core.event.ClientStatusEvent;
+import com.canyue.mqtt.core.event.MessageEvent;
 import com.canyue.mqtt.core.eventsource.ClientStatusEventSource;
 import com.canyue.mqtt.core.eventsource.MessageEventSource;
-import com.canyue.mqtt.core.callback.ClientCallback;
-import com.canyue.mqtt.core.eventobject.ClientStatusEvent;
-import com.canyue.mqtt.core.eventobject.MessageEvent;
 import com.canyue.mqtt.core.exception.MqttPersistenceException;
 import com.canyue.mqtt.core.listener.ClientStatusListener;
 import com.canyue.mqtt.core.listener.MessageReceivedListener;
@@ -13,7 +13,10 @@ import com.canyue.mqtt.core.persistence.IPersistence;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -27,24 +30,27 @@ public class MessageQueue {
     /**
      * 待确认的消息，如果没收到确认，就重发
      */
-    private LinkedList<BasePacket> maybeReSendQueue=new LinkedList<BasePacket>();
+    private LinkedList<BasePacket> maybeReSendQueue = new LinkedList<BasePacket>();
     private ConnectConfig connectConfig;
-    private final Object lock=new Object();
+    private final Object lock = new Object();
     private MessageEventSource messageEventSource;
     private ClientStatusEventSource clientStatusEventSource;
     private ClientCallback clientCallback;
-    private static Logger logger= LoggerFactory.getLogger(MessageQueue.class);
-    private IPersistence persistence=null;
-    private boolean connected=false;
+    private static Logger logger = LoggerFactory.getLogger(MessageQueue.class);
+    private IPersistence persistence = null;
+    private boolean connected = false;
+    private Map<Integer, SubscribePacket> subscribePacketMap = new HashMap<>();
+    private Map<Integer, UnsubscribePacket> unsubscribePacketMap = new HashMap<>();
 
-    public MessageQueue(IPersistence persistence ,ConnectConfig connectConfig){
-        this.persistence=persistence;
-       this.connectConfig = connectConfig;
+
+    public MessageQueue(IPersistence persistence, ConnectConfig connectConfig) {
+        this.persistence = persistence;
+        this.connectConfig = connectConfig;
     }
 
-    public  void addLast(BasePacket packet){
-       synchronized (lock){
-           this.willSendQueue.offerLast(packet);
+    public void addLast(BasePacket packet) {
+        synchronized (lock) {
+            this.willSendQueue.offerLast(packet);
            lock.notify();
        }
     }
@@ -69,8 +75,9 @@ public class MessageQueue {
     }
 
     /**
-     *     connect  subscribe unsubscribe ping disconnect
-     *     publish publishRec publishRel publishComp publishAck
+     * connect  subscribe unsubscribe PingReq disconnect
+     * publish (publishRec publishRel publishComp publishAck)
+     *
      * @param basePacket
      * @throws MqttPersistenceException
      */
@@ -90,13 +97,22 @@ public class MessageQueue {
             this.addLast(basePacket);
         }else if(basePacket instanceof ConnectPacket){
             this.addFirst(basePacket);
-        }else if(basePacket instanceof PingReqPacket){
-           if (connected){
-               this.addFirst(basePacket);
-           }
-        }else {
+        }else if (basePacket instanceof PingReqPacket) {
+            if (connected) {
+                this.addFirst(basePacket);
+            }
+        } else if (basePacket instanceof SubscribePacket) {
+            SubscribePacket subscribePacket = (SubscribePacket) basePacket;
+            subscribePacketMap.put(subscribePacket.getMsgId(), subscribePacket);
+            this.addLast(subscribePacket);
+        } else if (basePacket instanceof UnsubscribePacket) {
+            UnsubscribePacket unsubscribePacket = (UnsubscribePacket) basePacket;
+            unsubscribePacketMap.put(unsubscribePacket.getMsgId(), unsubscribePacket);
+            this.addLast(basePacket);
+        } else {
             this.addLast(basePacket);
         }
+
     }
 
     /**
@@ -106,16 +122,24 @@ public class MessageQueue {
      * @throws MqttPersistenceException
      */
     public void handleReceivedMsg(BasePacket basePacket) throws MqttPersistenceException {
-        if(basePacket instanceof PublishPacket){
+        ClientStatusEvent c;
+        SubAckPacket subAckPacket;
+        SubscribePacket subscribePacket;
+        UnsubAckPacket unsubAckPacket;
+        UnsubscribePacket unsubscribePacket;
+        PubRecPacket pubRecPacket;
+        PubRelPacket pubRelPacket;
+        Message msg;
+        if (basePacket instanceof PublishPacket) {
             logger.info("接收到一个publish报文,正在处理中....");
-            Message msg = ((PublishPacket) basePacket).getMessage();
-            if(messageEventSource!=null){
-                messageEventSource.notifyListenerEvent(new MessageEvent(messageEventSource,msg));
+            msg = ((PublishPacket) basePacket).getMessage();
+            if (messageEventSource != null) {
+                messageEventSource.notifyListenerEvent(new MessageEvent(messageEventSource, msg));
             }
-            switch (msg.getQos()){
+            switch (msg.getQos()) {
                 case 1:
                     addLast(new PubAckPacket(msg.getMsgId()));
-                break;
+                    break;
                 case 2:
                     persistence.save(msg.getMsgId()+".prec",msg.getMsgId());
                     addLast(new PubRecPacket(msg.getMsgId()));
@@ -123,24 +147,25 @@ public class MessageQueue {
                 default:break;
             }
         }else if(basePacket instanceof PubRecPacket){
-            PubRecPacket pubRecPacket = (PubRecPacket) basePacket;
-            persistence.remove(pubRecPacket.getMsgId()+".p");
+            pubRecPacket = (PubRecPacket) basePacket;
+            persistence.remove(pubRecPacket.getMsgId() + ".p");
             persistence.save(pubRecPacket.getMsgId()+".prel",pubRecPacket.getMsgId());
             addLast(new PubRelPacket(pubRecPacket.getMsgId()));
         }else if(basePacket instanceof PubRelPacket){
-            PubRelPacket pubRelPacket = (PubRelPacket) basePacket;
-            persistence.remove(pubRelPacket.getMsgId()+".prec");
+            pubRelPacket = (PubRelPacket) basePacket;
+            persistence.remove(pubRelPacket.getMsgId() + ".prec");
             addLast(new PubCompPacket(pubRelPacket.getMsgId()));
         }else if(basePacket instanceof PubCompPacket){
             persistence.remove(((PubCompPacket) basePacket).getMsgId()+".prel");
         }else if(basePacket instanceof PubAckPacket){
             persistence.remove(((PubAckPacket) basePacket).getMsgId()+".p");
         }else if(basePacket instanceof ConnectAckPacket){
-            int returnCode = ((ConnectAckPacket) basePacket).getReturnCode();
-            if(returnCode==0){
-                connected=true;
+            ConnectAckPacket connectAckPacket = (ConnectAckPacket) basePacket;
+            int returnCode = connectAckPacket.getReturnCode();
+            if (returnCode == 0) {
+                connected = true;
                 this.clientCallback.connectCompeted();
-                if(connectConfig.isCleanSession()){
+                if (connectConfig.isCleanSession()) {
                     try {
                         persistence.clear();
                     } catch (Exception e) {
@@ -158,12 +183,27 @@ public class MessageQueue {
                     for (BasePacket bp : list) {
                         this.addLast(bp);
                     }
+                    list = null;
                 }
-            }else {
-                connected=false;
-                logger.info("连接失败,return code:{}",returnCode);
+            } else {
+                connected = false;
+                logger.info("连接失败,return code:{}", returnCode);
                 clientCallback.reconnect();
             }
+        } else if (basePacket instanceof SubAckPacket) {
+            subAckPacket = (SubAckPacket) basePacket;
+            c = new ClientStatusEvent(clientStatusEventSource, ClientStatusEvent.SUBSCRIBE_COMPUTED);
+            subscribePacket = subscribePacketMap.get(subAckPacket.getMsgId());
+            c.setTopicFilters(subscribePacket.getTopicsFilters());
+            clientStatusEventSource.notifyListenerEvent(c);
+            subscribePacketMap.remove(subAckPacket.getMsgId());
+        } else if (basePacket instanceof UnsubAckPacket) {
+            unsubAckPacket = (UnsubAckPacket) basePacket;
+            unsubscribePacket = (UnsubscribePacket) unsubscribePacketMap.get(unsubAckPacket.getMsgId());
+            c = new ClientStatusEvent(clientStatusEventSource, ClientStatusEvent.UNSUBSCRIBE_COMPUTED);
+            c.setTopicFilters(unsubscribePacket.getTopicsFilters());
+            clientStatusEventSource.notifyListenerEvent(c);
+            unsubscribePacketMap.remove(unsubAckPacket.getMsgId());
         }
         logger.info("收到一个{}报文,正在处理中。。。",basePacket.getType());
     }

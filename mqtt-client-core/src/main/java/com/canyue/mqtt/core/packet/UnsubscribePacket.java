@@ -1,6 +1,6 @@
 package com.canyue.mqtt.core.packet;
 
-import com.canyue.mqtt.core.util.PacketUtils;
+import com.canyue.mqtt.core.utils.PacketUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -63,12 +63,18 @@ public class UnsubscribePacket extends BasePacket {
         }
         return baos.toByteArray();
     }
+
     @Override
     public byte getFixHeaderFlag() {
         return 2;
     }
+
     @Override
     public PacketType getType() {
         return type;
+    }
+
+    public String[] getTopicsFilters() {
+        return topicsFilters;
     }
 }

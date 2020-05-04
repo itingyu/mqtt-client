@@ -1,4 +1,4 @@
-package com.canyue.mqtt.core.eventobject;
+package com.canyue.mqtt.core.event;
 
 import com.canyue.mqtt.core.Message;
 

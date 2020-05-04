@@ -2,7 +2,7 @@ package com.canyue.mqtt.core.packet;
 
 
 import com.canyue.mqtt.core.Message;
-import com.canyue.mqtt.core.util.PacketUtils;
+import com.canyue.mqtt.core.utils.PacketUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

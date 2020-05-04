@@ -1,6 +1,6 @@
 package com.canyue.mqtt.core.listener;
 
-import com.canyue.mqtt.core.eventobject.ClientStatusEvent;
+import com.canyue.mqtt.core.event.ClientStatusEvent;
 
 import java.util.EventListener;
 
@@ -17,7 +17,23 @@ public interface ClientStatusListener extends EventListener {
 
     /**
      * 连接断开后调用
+     *
      * @param clientStatusEvent
      */
     public void shutdown(ClientStatusEvent clientStatusEvent);
+
+    /**
+     * 订阅主题完成后调用
+     *
+     * @param clientStatusEvent
+     */
+    public void subscribeCompeted(ClientStatusEvent clientStatusEvent);
+
+    /**
+     * 取消主题完成后调用
+     *
+     * @param clientStatusEvent
+     */
+    public void unsubscribeCompeted(ClientStatusEvent clientStatusEvent);
+
 }

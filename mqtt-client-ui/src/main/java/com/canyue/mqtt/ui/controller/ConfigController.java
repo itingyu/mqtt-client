@@ -41,7 +41,7 @@ public class ConfigController {
     @FXML
     private Button btnConfigCancel;
 
-    public boolean add = false;
+    public volatile boolean add = false;
 
     private ConnConfig connConfig;
 

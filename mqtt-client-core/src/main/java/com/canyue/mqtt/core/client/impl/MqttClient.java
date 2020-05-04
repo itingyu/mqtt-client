@@ -13,7 +13,7 @@ import com.canyue.mqtt.core.network.INetworkModule;
 import com.canyue.mqtt.core.network.impl.TcpModule;
 import com.canyue.mqtt.core.packet.*;
 import com.canyue.mqtt.core.persistence.IPersistence;
-import com.canyue.mqtt.core.util.TopicUtils;
+import com.canyue.mqtt.core.utils.TopicUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -1,6 +1,7 @@
-package com.canyue.mqtt.core.eventobject;
+package com.canyue.mqtt.core.event;
 
 import com.canyue.mqtt.core.eventsource.ClientStatusEventSource;
+
 import java.util.EventObject;
 
 
@@ -16,12 +17,25 @@ public class ClientStatusEvent extends EventObject {
      */
     public final static int SHUTDOWN = 0;
     public final static int RUN = 1;
-    private int statusCode ;
+    public final static int SUBSCRIBE_COMPUTED = 2;
+    public final static int UNSUBSCRIBE_COMPUTED = 3;
+    private int statusCode;
+    private String[] topicFilters = null;
+
     public ClientStatusEvent(ClientStatusEventSource source, int statusCode) {
         super(source);
-        this.statusCode=statusCode;
+        this.statusCode = statusCode;
     }
+
     public int getStatusCode() {
         return statusCode;
+    }
+
+    public String[] getTopicFilters() {
+        return topicFilters;
+    }
+
+    public void setTopicFilters(String[] topicFilters) {
+        this.topicFilters = topicFilters;
     }
 }

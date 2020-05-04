@@ -1,6 +1,6 @@
 package com.canyue.mqtt.core.packet;
 
-import com.canyue.mqtt.core.util.PacketUtils;
+import com.canyue.mqtt.core.utils.PacketUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -79,8 +79,17 @@ public class SubscribePacket extends BasePacket {
     public byte getFixHeaderFlag() {
         return 2;
     }
+
     @Override
     public PacketType getType() {
         return type;
+    }
+
+    public String[] getTopicsFilters() {
+        return topicsFilters;
+    }
+
+    public int[] getRequiredQos() {
+        return requiredQos;
     }
 }

@@ -1,8 +1,8 @@
 package com.canyue.mqtt.core;
 
 import com.canyue.mqtt.core.exception.MqttPersistenceException;
-import com.canyue.mqtt.core.packet.*;
-import com.canyue.mqtt.core.util.PacketUtils;
+import com.canyue.mqtt.core.packet.BasePacket;
+import com.canyue.mqtt.core.utils.PacketUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

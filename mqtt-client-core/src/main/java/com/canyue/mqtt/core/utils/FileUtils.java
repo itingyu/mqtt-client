@@ -1,4 +1,4 @@
-package com.canyue.mqtt.core.util;
+package com.canyue.mqtt.core.utils;
 
 /**
  * @author: canyue

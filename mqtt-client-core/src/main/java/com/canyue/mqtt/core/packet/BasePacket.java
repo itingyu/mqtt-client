@@ -1,6 +1,6 @@
 package com.canyue.mqtt.core.packet;
 
-import com.canyue.mqtt.core.util.PacketUtils;
+import com.canyue.mqtt.core.utils.PacketUtils;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;

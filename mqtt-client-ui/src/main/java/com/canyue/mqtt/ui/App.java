@@ -24,19 +24,22 @@ public class App extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
 
-        URL url = App.class.getClassLoader().getResource("layout/main.fxml");
+        URL url = App.class.getClassLoader().getResource("fxml/main.fxml");
         FXMLLoader fxmlLoader = new FXMLLoader();
         fxmlLoader.setLocation(url);
         Scene scene = new Scene(fxmlLoader.load());
         primaryStage.setScene(scene);
         primaryStage.setTitle("MQTT客户端测试工具1.0");
-        primaryStage.getIcons().add(new Image("img/mqtt.png"));
+        primaryStage.getIcons().add(new Image("img/mqtt_icon.png"));
+        primaryStage.centerOnScreen();
+        primaryStage.setResizable(false);
         primaryStage.show();
         MainController mainController = fxmlLoader.getController();
         mainController.setMainStage(primaryStage);
         primaryStage.setOnHidden(new EventHandler<WindowEvent>() {
             @Override
             public void handle(WindowEvent event) {
+                mainController.close();
                 Platform.exit();
             }
         });

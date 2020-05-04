@@ -1,8 +1,13 @@
 package com.canyue.mqtt.ui.controller;
 
+import com.canyue.mqtt.ui.component.listcell.ClientCell;
 import com.canyue.mqtt.ui.config.ConnConfig;
 import com.canyue.mqtt.ui.data.DataFactory;
 import com.canyue.mqtt.ui.data.DataHolder;
+import com.canyue.mqtt.ui.eventhandler.ConfigStageHiddenHandler;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
+import javafx.collections.ListChangeListener;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -11,17 +16,19 @@ import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
+import javafx.scene.control.SelectionMode;
+import javafx.scene.image.ImageView;
+import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
-import javafx.stage.WindowEvent;
 import javafx.util.Callback;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.Set;
 
 
 /**
@@ -33,6 +40,8 @@ public class MainController {
     private static Logger logger = LoggerFactory.getLogger(MainController.class);
     @FXML
     private ListView<ClientController> lvClient;
+    @FXML
+    private ImageView iv_bg;
 
     private Stage mainStage;
     @FXML
@@ -48,13 +57,12 @@ public class MainController {
 
     public void create(ActionEvent actionEvent) {
         FXMLLoader configFxmlLoader = new FXMLLoader();
-        configFxmlLoader.setLocation(getClass().getClassLoader().getResource("layout/config.fxml"));
+        configFxmlLoader.setLocation(getClass().getClassLoader().getResource("fxml/config.fxml"));
         Scene scene;
         try {
             scene = new Scene(configFxmlLoader.load());
             Stage configStage = new Stage();
             configStage.setScene(scene);
-
             ConfigController configController = configFxmlLoader.getController();
             configController.setStage(configStage);
             configController.setConnConfig(ConnConfig.getDefaultConnConfig());
@@ -63,98 +71,80 @@ public class MainController {
             configStage.initOwner(mainStage);
             configStage.setTitle("连接配置");
             configStage.show();
-            configStage.setOnHidden(new EventHandler<WindowEvent>() {
-                @Override
-                public void handle(WindowEvent event) {
-                    if (configController.add) {
-                        FXMLLoader clientLoader = new FXMLLoader();
-                        clientLoader.setLocation(getClass().getClassLoader().getResource("layout/client.fxml"));
-                        VBox clientVBox = null;
-                        try {
-                            System.out.println(clientLoader.getController() + "====");
-                            clientVBox = clientLoader.load();
-                            System.out.println("===========================");
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                        ClientController clientController = clientLoader.getController();
-                        clientController.setMainStage(mainStage);
-                        clientController.getDataHolder().setConnConfig(configController.getConnConfig());
-                        clientController.getDataHolder().setClientLoader(clientLoader);
-                        clientController.getDataHolder().setClientVBox(clientVBox);
-                        DataFactory.dataMap.put(clientController, clientController.getDataHolder());
-                        System.out.println(clientLoader.getController() + "===new ");
-                        lvClient.getItems().add(clientController);
-                    } else {
-                        configController.add = false;
-                    }
-                }
-            });
+            configStage.setOnHidden(new ConfigStageHiddenHandler(configController, mainStage, lvClient));
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
     public void close() {
-
+        Set<ClientController> clientControllerSet = DataFactory.dataMap.keySet();
+        for (ClientController clientController : clientControllerSet) {
+            clientController.close();
+            clientController = null;
+        }
     }
-
-    private void showConfig() {
-
-    }
-
-
     @FXML
     private void initialize() {
         initLvMsg();
     }
 
     public void initLvMsg() {
-        lvClient.setPlaceholder(new Label("没有数据!"));
-        lvClient.setFixedCellSize(60);
+        lvClient.setPlaceholder(new Label("没有MQTT客户端!"));
+        lvClient.setFixedCellSize(100);
         //自定义listView单元格
         lvClient.setCellFactory(new Callback<ListView<ClientController>, ListCell<ClientController>>() {
             @Override
             public ListCell<ClientController> call(ListView<ClientController> param) {
-                ListCell<ClientController> listCell = new ListCell<ClientController>() {
-                    @Override
-                    protected void updateItem(ClientController item, boolean empty) {
-                        super.updateItem(item, empty);
-                        if (empty == false) {
-                            Label label = new Label("client");
-                            //Label label = new Label(item.getDataHolder().getConnConfig().getClientId());
-                            this.setGraphic(label);
-                        }
-                    }
-                };
-                listCell.setOnMouseClicked(new EventHandler<MouseEvent>() {
-                    @Override
-                    public void handle(MouseEvent event) {
-                        DataHolder dataHolder = DataFactory.dataMap.get(listCell.getItem());
-                        System.out.println(listCell.getItem() + "==listCell  before");
-                        FXMLLoader clientLoader = dataHolder.getClientLoader();
-                        if (clientLoader == null) {
-                            System.out.println(dataHolder.getConnConfig() + " handle");
-                            clientLoader = new FXMLLoader();
-                            clientLoader.setLocation(getClass().getClassLoader().getResource("layout/client.fxml"));
-                            VBox clientVBox = null;
-                            clientLoader.setController(listCell.getItem());
-                            try {
-                                System.out.println(clientLoader.getController() + "==before");
-                                clientVBox = clientLoader.load();
-                                System.out.println(clientLoader.getController() + "==after");
-                            } catch (IOException e) {
-                                e.printStackTrace();
+                try {
+                    ListCell<ClientController> listCell = new ClientCell();
+                    listCell.setOnMouseClicked(new EventHandler<MouseEvent>() {
+                        @Override
+                        public void handle(MouseEvent event) {
+                            if (!listCell.isEmpty()) {
+                                String name = event.getButton().name();
+                                if (MouseButton.PRIMARY.name().equals(name)) {
+                                    DataHolder dataHolder = DataFactory.dataMap.get(listCell.getItem());
+                                    borderPane.setCenter(dataHolder.getClientVBox());
+                                }
+                                System.out.println(event.getButton().name() + " click");
+                            } else {
+                                System.out.println("blank click!");
                             }
-                            dataHolder.setClientLoader(clientLoader);
-                            dataHolder.setClientVBox(clientVBox);
                         }
-                        System.out.println(listCell.getItem() + "==listCell after");
-                        System.out.println(dataHolder);
-                        borderPane.setRight(dataHolder.getClientVBox());
+                    });
+                    return listCell;
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                return null;
+            }
+        });
+
+        lvClient.setEditable(false);
+        lvClient.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
+
+        lvClient.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<ClientController>() {
+            @Override
+            public void changed(ObservableValue<? extends ClientController> observable, ClientController oldValue, ClientController newValue) {
+                System.out.println("???????");
+            }
+        });
+        lvClient.getItems().addListener(new ListChangeListener<ClientController>() {
+            @Override
+            public void onChanged(Change<? extends ClientController> c) {
+                if (lvClient.getItems().isEmpty()) {
+                    borderPane.setCenter(iv_bg);
+                    return;
+                } else {
+                    c.next();
+                    if (c.wasRemoved()) {
+                        ClientController clientController = lvClient.getSelectionModel().getSelectedItem();
+                        if (clientController != null) {
+                            borderPane.setCenter(DataFactory.dataMap.get(clientController).getClientVBox());
+                        }
                     }
-                });
-                return listCell;
+                }
             }
         });
 

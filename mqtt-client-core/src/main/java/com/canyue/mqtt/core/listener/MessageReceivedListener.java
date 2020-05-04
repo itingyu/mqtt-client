@@ -1,6 +1,7 @@
 package com.canyue.mqtt.core.listener;
 
-import com.canyue.mqtt.core.eventobject.MessageEvent;
+import com.canyue.mqtt.core.event.MessageEvent;
+
 import java.util.EventListener;
 
 

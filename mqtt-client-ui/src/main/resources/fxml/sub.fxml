@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--600 800-->
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.Cursor?>
+<?import javafx.scene.layout.*?>
+<Tab xmlns="http://javafx.com/javafx"
+     xmlns:fx="http://javafx.com/fxml"
+     fx:controller="com.canyue.mqtt.ui.controller.SubController"
+     text="Subscribe">
+    <content>
+        <VBox prefHeight="600.0" prefWidth="800.0">
+            <children>
+                <HBox prefHeight="35.0" prefWidth="800.0" style="-fx-background-color: #dddddd;">
+                    <children>
+                        <Label prefWidth="50.0" text="主题:"/>
+                        <TextField fx:id="tfTopicsFilterSub" alignment="CENTER" style="-fx-background-radius: 6;"
+                                   text="/test/topicTest01"/>
+                        <Button mnemonicParsing="false" onAction="#subscribe"
+                                style="-fx-background-color: #888888; -fx-background-radius: 10;" text="订阅">
+                            <HBox.margin>
+                                <Insets left="50.0"/>
+                            </HBox.margin>
+                            <cursor>
+                                <Cursor fx:constant="HAND"/>
+                            </cursor>
+                        </Button>
+                    </children>
+                    <padding>
+                        <Insets bottom="10.0" left="20.0" right="20.0" top="10.0" />
+                    </padding>
+                </HBox>
+                <HBox prefHeight="35.0" prefWidth="800.0" style="-fx-background-color: #dddddd;">
+                    <children>
+                        <RadioButton nodeOrientation="RIGHT_TO_LEFT" selected="true" text="Qos0">
+                            <toggleGroup>
+                                <ToggleGroup fx:id="tgQosSub"/>
+                            </toggleGroup>
+                        </RadioButton>
+                        <RadioButton fx:id="rb_sub_qos1" nodeOrientation="RIGHT_TO_LEFT" text="Qos1"
+                                     toggleGroup="$tgQosSub"/>
+                        <RadioButton fx:id="rb_sub_qos2" nodeOrientation="RIGHT_TO_LEFT" text="Qos2"
+                                     toggleGroup="$tgQosSub">
+                            <HBox.margin>
+                                <Insets/>
+                            </HBox.margin>
+                        </RadioButton>
+                    </children>
+                    <padding>
+                        <Insets bottom="10.0" left="20.0" right="20.0" top="10.0" />
+                    </padding>
+                </HBox>
+                <HBox prefHeight="530" prefWidth="800" style="-fx-background-color: #dddddd;">
+                    <children>
+                        <VBox prefHeight="530" prefWidth="245">
+                            <ListView fx:id="lvTopicFilter" prefWidth="230" prefHeight="530"
+                                      style="-fx-background-color: #eeeeee;">
+                                <padding>
+                                    <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
+                                </padding>
+                            </ListView>
+                            <padding>
+                                <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
+                            </padding>
+                        </VBox>
+                        <VBox prefHeight="530" prefWidth="570">
+                            <ListView fx:id="lvMessage" prefHeight="230" prefWidth="570"
+                                      style="-fx-background-color: #eeeeee;">
+                            </ListView>
+                            <TextArea fx:id="taMsgRecv" editable="false" prefHeight="300" prefWidth="570"
+                                      promptText="这里会展示收到的消息。。。" style="-fx-background-color: #dddddd;">
+                                <cursor>
+                                    <Cursor fx:constant="DEFAULT"/>
+                                </cursor>
+                                <VBox.margin>
+                                    <Insets top="5.0"/>
+                                </VBox.margin>
+                            </TextArea>
+                            <padding>
+                                <Insets bottom="5.0" right="5.0" top="5.0"/>
+                            </padding>
+                        </VBox>
+                    </children>
+                </HBox>
+            </children>
+        </VBox>
+    </content>
+
+</Tab>

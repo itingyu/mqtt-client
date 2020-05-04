@@ -13,39 +13,48 @@ import com.canyue.mqtt.ui.data.DataFactory;
 import com.canyue.mqtt.ui.data.DataHolder;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
-import javafx.scene.control.ListView;
-import javafx.scene.control.TabPane;
-import javafx.scene.control.TextField;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Scene;
+import javafx.scene.control.*;
+import javafx.scene.layout.HBox;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
+import javafx.util.Callback;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
 
 /**
  * @author canyue
  */
-public class ConnController  {
+public class ConnController {
     @FXML
     private TextField tfSocket;
     @FXML
     private Button btnConnect;
     @FXML
     private Button btnDisconnect;
+//    @FXML
+////    private Button btnSettings;
 
     private static Logger logger = LoggerFactory.getLogger(ConnController.class);
     private SimpleDateFormat sdf = new SimpleDateFormat("E yyyy-MM-dd hh:mm:ss a zzz");
     private ClientController clientController;
     private DataHolder dataHolder;
-    private ListView<Message> lvMessage;
+    private ListView<Message> lvMsg;
     private TabPane tabPane;
-    private ListView<String> lvTopicFilter;
+
 
 
     public void connect(ActionEvent actionEvent) {
         logger.debug("正在连接建立");
+        initLvMsg();
         try {
             ConnConfig connConfig = dataHolder.getConnConfig();
             MqttClient client = MqttClient.getBuilder()
@@ -72,7 +81,8 @@ public class ConnController  {
             btnDisconnect.setDisable(true);
             btnConnect.setDisable(false);
             tabPane.setDisable(true);
-            lvMessage.getItems().removeAll();
+            //btnSettings.setDisable(false);
+            lvMsg.getItems().removeAll();
             dataHolder.setRunStatus(false);
             logger.info("连接已断开！");
         } catch (MqttException e) {
@@ -80,6 +90,65 @@ public class ConnController  {
         }
     }
 
+    public void settings(ActionEvent actionEvent) {
+        FXMLLoader configFxmlLoader = new FXMLLoader();
+        configFxmlLoader.setLocation(getClass().getClassLoader().getResource("fxml/config.fxml"));
+        Scene scene;
+        try {
+            scene= new Scene(configFxmlLoader.load());
+            Stage configStage = new Stage();
+            configStage.setScene(scene);
+            ConfigController configController = configFxmlLoader.getController();
+            configController.setStage(configStage);
+            configController.setConnConfig(dataHolder.getConnConfig());
+            configController.initData();
+            configStage.initModality(Modality.WINDOW_MODAL);
+            configStage.initOwner(clientController.getMainStage());
+            configStage.setTitle("连接配置");
+            configStage.show();
+            configStage.setOnHidden(new EventHandler<WindowEvent>() {
+                @Override
+                public void handle(WindowEvent event) {
+                    tfSocket.setText(dataHolder.getConnConfig().getHost() + ":" + dataHolder.getConnConfig().getPort());
+                }
+            });
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        System.out.println("MyController.settings");
+    }
+    public void initLvMsg(){
+        lvMsg.setPlaceholder(new Label("没有数据!"));
+        lvMsg.setFixedCellSize(60);
+        //自定义listView单元格
+        lvMsg.setCellFactory(new Callback<ListView<Message>, ListCell<Message>>() {
+            @Override
+            public ListCell<Message> call(ListView<Message> param) {
+                ListCell<Message> listCell=new ListCell<Message>(){
+                    @Override
+                    protected void updateItem(Message item, boolean empty) {
+                        super.updateItem(item, empty);
+                        if(empty==false){
+                            HBox hBox=new HBox(10);
+                            Label topic = new Label(item.getTopic());
+                            Label msgIdLabel =new Label(item.getMsgId()+"");
+                            Label qosLabel = new Label(item.getQos()+"");
+                            Label payloadLabel = null;
+                            try {
+                                payloadLabel = new Label(new String(item.getPayload(),"utf8"));
+                            } catch (UnsupportedEncodingException e) {
+                                e.printStackTrace();
+                            }
+                            //Button bu = new Button(item.getMsgId()+"");
+                            hBox.getChildren().addAll(topic,msgIdLabel,qosLabel,payloadLabel);
+                            this.setGraphic(hBox);
+                        }
+                    }
+                };
+                return listCell;
+            }
+        });
+    }
 
     public void injectMainController(ClientController clientController) {
         System.out.println("ConnController.injectMainController");
@@ -88,8 +157,7 @@ public class ConnController  {
     }
 
     private void init() {
-        this.lvMessage = this.clientController.getLvMessage();
-        this.lvTopicFilter = this.clientController.getLvTopicFilter();
+        this.lvMsg = this.clientController.getListView();
         this.tabPane = this.clientController.getTabPane();
         dataHolder = DataFactory.dataMap.get(clientController);
     }
@@ -105,7 +173,7 @@ public class ConnController  {
             Platform.runLater(new Runnable() {
                 @Override
                 public void run() {
-                    lvMessage.getItems().add(messageEvent.getMessage());
+                    lvMsg.getItems().add(messageEvent.getMessage());
                 }
             });
         }
@@ -116,6 +184,7 @@ public class ConnController  {
             btnConnect.setDisable(true);
             btnDisconnect.setDisable(false);
             tabPane.setDisable(false);
+            //btnSettings.setDisable(true);
         }
 
         @Override
@@ -123,31 +192,9 @@ public class ConnController  {
             btnDisconnect.setDisable(true);
             btnConnect.setDisable(false);
             tabPane.setDisable(true);
-//            lvMessage.getItems().removeAll();
-//            lvTopicFilter.getItems().removeAll();
+          //  btnSettings.setDisable(false);
+            lvMsg.getItems().removeAll();
             logger.info("连接已断开！");
-        }
-
-        @Override
-        public void subscribeCompeted(ClientStatusEvent clientStatusEvent) {
-            String[] topicFilters = clientStatusEvent.getTopicFilters();
-            if (topicFilters != null) {
-                System.out.println("订阅成功:" + Arrays.toString(topicFilters));
-                Platform.runLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        lvTopicFilter.getItems().add(topicFilters[0]);
-                    }
-                });
-            }
-        }
-
-        @Override
-        public void unsubscribeCompeted(ClientStatusEvent clientStatusEvent) {
-            String[] topicFilters = clientStatusEvent.getTopicFilters();
-            if (topicFilters != null) {
-                System.out.println("取消订阅成功" + Arrays.toString(topicFilters));
-            }
         }
     }
 }
