@@ -49,7 +49,7 @@ public class PingThread implements Runnable{
             }finally {
                 this.messageQueue.getClientCallback().shutdown();
             }
-            logger.info("PingThread已停止运行！");
+            logger.debug("PingThread已停止运行！");
         }
     }
 }

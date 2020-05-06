@@ -49,7 +49,7 @@ public class ReceiverThread implements Runnable{
                 break;
             }
         }
-        logger.info("ReceiverThread已停止！");
+        logger.debug("ReceiverThread已停止！");
     }
 
 }

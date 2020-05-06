@@ -1,9 +1,13 @@
 package com.canyue.mqtt.ui.data;
 
+import com.canyue.mqtt.core.Message;
 import com.canyue.mqtt.core.client.impl.MqttClient;
 import com.canyue.mqtt.ui.config.ConnConfig;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.layout.VBox;
+
+import java.util.Map;
 
 
 /**
@@ -15,6 +19,7 @@ public class DataHolder {
     private boolean runStatus;
     private VBox clientVBox;
     private FXMLLoader clientLoader;
+    private Map<String, ObservableList<Message>> map;
 
     public VBox getClientVBox() {
         return clientVBox;
@@ -54,5 +59,13 @@ public class DataHolder {
 
     public void setRunStatus(boolean runStatus) {
         this.runStatus = runStatus;
+    }
+
+    public Map<String, ObservableList<Message>> getMap() {
+        return map;
+    }
+
+    public void setMap(Map<String, ObservableList<Message>> map) {
+        this.map = map;
     }
 }

@@ -33,4 +33,8 @@ public class MessageCell extends ListCell<Message> {
             this.setGraphic(graphic);
         }
     }
+
+    public MessageCellController getMessageCellController() {
+        return messageCellController;
+    }
 }

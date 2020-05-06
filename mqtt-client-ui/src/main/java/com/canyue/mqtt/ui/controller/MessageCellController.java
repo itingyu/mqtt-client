@@ -20,6 +20,10 @@ public class MessageCellController {
         this.message = message;
     }
 
+    public Message getMessage() {
+        return message;
+    }
+
     public void init() {
         this.lbTopic.setText("topic:\t" + message.getTopic());
         this.lbQos.setText("Qos:\t" + message.getQos());

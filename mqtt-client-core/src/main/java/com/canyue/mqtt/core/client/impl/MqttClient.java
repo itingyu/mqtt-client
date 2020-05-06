@@ -240,6 +240,7 @@ public class MqttClient implements IMqttClient {
         }
         @Override
         public void shutdown() {
+            logger.debug("shutdown被调用");
             synchronized (this){
                 if(runState){
                     try {

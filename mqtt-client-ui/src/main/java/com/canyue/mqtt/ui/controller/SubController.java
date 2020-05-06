@@ -4,15 +4,22 @@ import com.canyue.mqtt.core.Message;
 import com.canyue.mqtt.core.exception.MqttException;
 import com.canyue.mqtt.ui.component.listcell.MessageCell;
 import com.canyue.mqtt.ui.component.listcell.TopicFilterCell;
+import com.canyue.mqtt.ui.data.DataFactory;
 import com.canyue.mqtt.ui.data.DataHolder;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
 import javafx.util.Callback;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 
 
 /**
@@ -82,7 +89,34 @@ public class SubController {
             @Override
             public ListCell<Message> call(ListView<Message> param) {
                 try {
-                    ListCell<Message> listCell = new MessageCell();
+                    MessageCell listCell = new MessageCell();
+                    listCell.setOnMouseClicked(new EventHandler<MouseEvent>() {
+                        @Override
+                        public void handle(MouseEvent event) {
+                            if (!listCell.isEmpty()) {
+                                String name = event.getButton().name();
+                                if (MouseButton.PRIMARY.name().equals(name)) {
+                                    listCell.updateSelected(true);
+                                }
+                                logger.debug(event.getButton().name() + " click");
+                            } else {
+                                logger.debug("blank click!");
+                            }
+                        }
+                    });
+                    listCell.selectedProperty().addListener(new ChangeListener<Boolean>() {
+                        @Override
+                        public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
+                            if (newValue == true && listCell != null) {
+                                byte[] payload = listCell.getMessageCellController().getMessage().getPayload();
+                                try {
+                                    taMsgRecv.setText(new String(payload, "utf8"));
+                                } catch (UnsupportedEncodingException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                        }
+                    });
                     return listCell;
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -100,7 +134,34 @@ public class SubController {
             @Override
             public ListCell<String> call(ListView<String> param) {
                 try {
-                    ListCell<String> listCell = new TopicFilterCell();
+                    TopicFilterCell listCell = new TopicFilterCell(dataHolder.getMap());
+                    listCell.setOnMouseClicked(new EventHandler<MouseEvent>() {
+                        @Override
+                        public void handle(MouseEvent event) {
+                            if (!listCell.isEmpty()) {
+                                String name = event.getButton().name();
+                                if (MouseButton.PRIMARY.name().equals(name)) {
+                                    if (lvMessage.getItems().size() <= 0) {
+                                        taMsgRecv.setText("");
+                                    } else {
+                                        lvMessage.getSelectionModel().select(0);
+                                    }
+                                }
+                                logger.debug(event.getButton().name() + " click");
+                            } else {
+                                logger.debug("blank click!");
+                            }
+                        }
+                    });
+                    listCell.selectedProperty().addListener(new ChangeListener<Boolean>() {
+                        @Override
+                        public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
+                            if (newValue == true && listCell != null) {
+                                DataHolder dataHolder = DataFactory.dataMap.get(listCell.getItem());
+                                lvMessage.setItems(listCell.getTopicFilterCellController().getMessageList());
+                            }
+                        }
+                    });
                     return listCell;
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -108,5 +169,6 @@ public class SubController {
                 return null;
             }
         });
+        lvTopicFilter.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
     }
 }

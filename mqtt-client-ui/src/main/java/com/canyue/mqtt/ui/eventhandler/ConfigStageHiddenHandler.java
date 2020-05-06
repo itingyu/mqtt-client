@@ -10,6 +10,7 @@ import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 
 import java.io.IOException;
+import java.util.HashMap;
 
 /**
  * @author: canyue
@@ -42,6 +43,7 @@ public class ConfigStageHiddenHandler implements EventHandler<WindowEvent> {
             clientController.getDataHolder().setConnConfig(configController.getConnConfig());
             clientController.getDataHolder().setClientLoader(clientLoader);
             clientController.getDataHolder().setClientVBox(clientVBox);
+            clientController.getDataHolder().setMap(new HashMap<>());
             lvClient.getItems().add(clientController);
         }
         configController.add = false;
