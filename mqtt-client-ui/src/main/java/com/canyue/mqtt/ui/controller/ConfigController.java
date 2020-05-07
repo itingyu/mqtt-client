@@ -12,6 +12,7 @@ import java.util.UUID;
  * @author canyue
  */
 public class ConfigController {
+
     @FXML
     private TextField tfConfigHost;
     @FXML
@@ -42,9 +43,7 @@ public class ConfigController {
     private Button btnConfigCancel;
 
     public volatile boolean add = false;
-
     private ConnConfig connConfig;
-
     private Stage stage;
 
     public void generateClientId(ActionEvent actionEvent) {

@@ -1,4 +1,4 @@
-package com.canyue.mqtt.ui.controller;
+package com.canyue.mqtt.ui.component.listcell.cellcontroller;
 
 import com.canyue.mqtt.core.Message;
 import javafx.fxml.FXML;
@@ -19,11 +19,9 @@ public class MessageCellController {
     public void setMessage(Message message) {
         this.message = message;
     }
-
     public Message getMessage() {
         return message;
     }
-
     public void init() {
         this.lbTopic.setText("topic:\t" + message.getTopic());
         this.lbQos.setText("Qos:\t" + message.getQos());

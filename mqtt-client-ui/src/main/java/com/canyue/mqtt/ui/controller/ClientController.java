@@ -1,18 +1,18 @@
 package com.canyue.mqtt.ui.controller;
 
 import com.canyue.mqtt.core.Message;
-import com.canyue.mqtt.ui.data.DataFactory;
 import com.canyue.mqtt.ui.data.DataHolder;
+import com.canyue.mqtt.ui.data.TopicFilterData;
 import javafx.fxml.FXML;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TabPane;
-import javafx.stage.Stage;
 
 
 /**
  * @author canyue
  */
 public class ClientController {
+
     @FXML
     private TabPane tabPane;
     @FXML
@@ -23,32 +23,23 @@ public class ClientController {
     private SubController subController;
     @FXML
     private HisController hisController;
-
-    private DataHolder dataHolder = new DataHolder();
-    private Stage mainStage;
+    @FXML
+    private DataHolder dataHolder;
 
     @FXML
     private void initialize() {
         System.out.println("ClientController.initialize");
-        DataFactory.dataMap.put(this, dataHolder);
+    }
+
+    public void init() {
         connController.injectMainController(this);
         pubController.injectMainController(this);
         subController.injectMainController(this);
         hisController.injectMainController(this);
-
-
     }
 
     public DataHolder getDataHolder() {
         return this.dataHolder;
-    }
-
-    public Stage getMainStage() {
-        return mainStage;
-    }
-
-    public void setMainStage(Stage mainStage) {
-        this.mainStage = mainStage;
     }
 
     public TabPane getTabPane() {
@@ -59,7 +50,7 @@ public class ClientController {
         return this.subController.getLvMessage();
     }
 
-    public ListView<String> getLvTopicFilter() {
+    public ListView<TopicFilterData> getLvTopicFilter() {
         return this.subController.getLvTopicFilter();
     }
 
@@ -69,5 +60,9 @@ public class ClientController {
             this.dataHolder.setRunStatus(false);
         }
         dataHolder.getConnConfig().saveConfig();
+    }
+
+    public void setDataHolder(DataHolder dataHolder) {
+        this.dataHolder = dataHolder;
     }
 }

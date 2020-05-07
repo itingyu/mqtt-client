@@ -1,8 +1,10 @@
-package com.canyue.mqtt.ui.controller;
+package com.canyue.mqtt.ui.component.listcell.cellcontroller;
 
-import com.canyue.mqtt.ui.component.listcell.ClientCell;
 import com.canyue.mqtt.ui.config.ConnConfig;
+import com.canyue.mqtt.ui.controller.ClientController;
 import com.canyue.mqtt.ui.data.DataFactory;
+import com.canyue.mqtt.ui.data.DataHolder;
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
@@ -18,38 +20,34 @@ public class ClientCellController {
     private Label laAddress;
     @FXML
     private Label laUsername;
-
+    private DataHolder dataHolder;
     private ConnConfig connConfig;
-    private ClientCell clientCell;
 
     public void remove(ActionEvent actionEvent) {
-        ClientController clientController = clientCell.getItem();
+        ClientController clientController = dataHolder.getClientController();
         clientController.close();
-        clientCell.getListView().getItems().remove(clientController);
-        DataFactory.dataMap.remove(clientController);
-        System.out.println("remove");
+        DataFactory.clientMap.remove(connConfig.getClientId());
+        Platform.runLater(new Runnable() {
+            @Override
+            public void run() {
+                DataFactory.dataHolderList.remove(dataHolder);
+            }
+        });
+
     }
 
     @FXML
     private void initialize() {
-        System.out.println("ClientCellController.initialize");
     }
 
-    public void init() {
+    public void initData() {
+        connConfig = dataHolder.getConnConfig();
         laClientId.setText("clientId:\t" + connConfig.getClientId());
         laAddress.setText("broker address:\t" + connConfig.getHost() + ":" + connConfig.getPort());
         laUsername.setText("username:\t" + connConfig.getUsername());
     }
 
-    public ConnConfig getConnConfig() {
-        return connConfig;
-    }
-
-    public void setConnConfig(ConnConfig connConfig) {
-        this.connConfig = connConfig;
-    }
-
-    public void setListCell(ClientCell clientCell) {
-        this.clientCell = clientCell;
+    public void setDataHolder(DataHolder dataHolder) {
+        this.dataHolder = dataHolder;
     }
 }

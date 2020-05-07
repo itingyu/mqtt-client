@@ -68,7 +68,13 @@
                             <ListView fx:id="lvMessage" prefHeight="230" prefWidth="570"
                                       style="-fx-background-color: #eeeeee;">
                             </ListView>
-                            <TextArea fx:id="taMsgRecv" editable="false" prefHeight="300" prefWidth="570"
+                            <HBox>
+                                <Label prefHeight="20" text="编码:"/>
+                                <ComboBox fx:id="cbEncode" prefHeight="20">
+                                </ComboBox>
+                            </HBox>
+
+                            <TextArea fx:id="taMsgRecv" editable="false" prefHeight="280" prefWidth="570"
                                       promptText="这里会展示收到的消息。。。" style="-fx-background-color: #dddddd;">
                                 <cursor>
                                     <Cursor fx:constant="DEFAULT"/>

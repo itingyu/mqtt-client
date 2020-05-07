@@ -10,8 +10,8 @@ import com.canyue.mqtt.core.listener.ClientStatusListener;
 import com.canyue.mqtt.core.listener.MessageReceivedListener;
 import com.canyue.mqtt.core.persistence.impl.FilePersistence;
 import com.canyue.mqtt.ui.config.ConnConfig;
-import com.canyue.mqtt.ui.data.DataFactory;
 import com.canyue.mqtt.ui.data.DataHolder;
+import com.canyue.mqtt.ui.data.TopicFilterData;
 import com.canyue.mqtt.ui.utils.TopicFilterMatcher;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
@@ -22,8 +22,9 @@ import javafx.stage.Modality;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -31,19 +32,19 @@ import java.util.Set;
  */
 public class ConnController  {
     @FXML
-    private TextField tfSocket;
+    private Label lbClientId;
     @FXML
     private Button btnConnect;
     @FXML
     private Button btnDisconnect;
 
     private static Logger logger = LoggerFactory.getLogger(ConnController.class);
-    private SimpleDateFormat sdf = new SimpleDateFormat("E yyyy-MM-dd hh:mm:ss a zzz");
     private ClientController clientController;
     private DataHolder dataHolder;
     private ListView<Message> lvMessage;
     private TabPane tabPane;
-    private ListView<String> lvTopicFilter;
+    private ListView<TopicFilterData> lvTopicFilter;
+    private Map<String, TopicFilterData> map;
 
     public void connect(ActionEvent actionEvent) {
         logger.debug("正在连接建立");
@@ -103,8 +104,8 @@ public class ConnController  {
         this.lvMessage = this.clientController.getLvMessage();
         this.lvTopicFilter = this.clientController.getLvTopicFilter();
         this.tabPane = this.clientController.getTabPane();
-        dataHolder = DataFactory.dataMap.get(clientController);
-
+        dataHolder = clientController.getDataHolder();
+        lbClientId.setText(dataHolder.getConnConfig().getClientId());
     }
 
     @FXML
@@ -116,7 +117,7 @@ public class ConnController  {
         public void messageArrived(MessageEvent messageEvent) {
             Message message = messageEvent.getMessage();
             if (message != null) {
-                Set<String> topicFiltersSet = dataHolder.getMap().keySet();
+                Set<String> topicFiltersSet = map.keySet();
                 for (String topicFilter : topicFiltersSet) {
                     try {
                         boolean flag = TopicFilterMatcher.match(topicFilter, message.getTopic());
@@ -124,7 +125,7 @@ public class ConnController  {
                             Platform.runLater(new Runnable() {
                                 @Override
                                 public void run() {
-                                    dataHolder.getMap().get(topicFilter).add(message);
+                                    map.get(topicFilter).getMessageObservableList().add(message);
                                 }
                             });
                         }
@@ -150,8 +151,6 @@ public class ConnController  {
             btnDisconnect.setDisable(true);
             btnConnect.setDisable(false);
             tabPane.setDisable(true);
-//            lvMessage.getItems().removeAll();
-//            lvTopicFilter.getItems().removeAll();
             logger.info("连接已断开！");
             Platform.runLater(new Runnable() {
                 @Override
@@ -171,27 +170,38 @@ public class ConnController  {
             String[] topicFilters = clientStatusEvent.getTopicFilters();
             if (topicFilters != null) {
                 System.out.println("订阅成功:" + Arrays.toString(topicFilters));
-                Platform.runLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (!dataHolder.getMap().containsKey(topicFilters[0])) {
-                            dataHolder.getMap().put(topicFilters[0], FXCollections.observableArrayList());
-                            lvTopicFilter.getItems().add(topicFilters[0]);
-                        } else {
-                            System.out.println("你已经订阅过" + topicFilters[0]);
+                if (map == null) {
+                    map = new HashMap<>();
+                }
+                if (!map.containsKey(topicFilters[0])) {
+                    TopicFilterData tfd = new TopicFilterData(topicFilters[0], FXCollections.observableArrayList());
+                    map.put(topicFilters[0], tfd);
+                    Platform.runLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            dataHolder.getFilterDataList().add(tfd);
                         }
-                    }
-                });
+                    });
+                } else {
+                    System.out.println("你已经订阅过" + topicFilters[0]);
+                }
             }
         }
 
         @Override
         public void unsubscribeCompeted(ClientStatusEvent clientStatusEvent) {
-            String[] topicFilters = clientStatusEvent.getTopicFilters();
-            if (topicFilters != null) {
-                System.out.println("取消订阅成功" + Arrays.toString(topicFilters));
-                dataHolder.getMap().remove(topicFilters[0]);
-            }
+            Platform.runLater(new Runnable() {
+                @Override
+                public void run() {
+                    String[] topicFilters = clientStatusEvent.getTopicFilters();
+                    if (topicFilters != null) {
+                        System.out.println("取消订阅成功" + Arrays.toString(topicFilters));
+                        dataHolder.getFilterDataList().remove(map.get(topicFilters[0]));
+                        map.remove(topicFilters[0]);
+                    }
+                }
+            });
+
         }
     }
 }

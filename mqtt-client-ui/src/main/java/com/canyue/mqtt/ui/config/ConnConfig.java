@@ -25,7 +25,7 @@ public class ConnConfig {
     private boolean willMessageIsRetain;
     private static final Logger logger = LoggerFactory.getLogger(ConnConfig.class);
     private Properties properties = new Properties();
-    private File file;
+    private File dir;
      public ConnConfig(){
 
      }
@@ -148,8 +148,11 @@ public class ConnConfig {
         properties.setProperty("willMessage.qos", String.valueOf(willMessageQos));
         properties.setProperty("willMessage.isRetain", String.valueOf(willMessageIsRetain));
         try {
-            file = new File(System.getProperty("user.dir"), ".mqtt/" + clientId + "/config.properties");
-            properties.store(new FileOutputStream(file), clientId + " connect config");
+            dir = new File(System.getProperty("user.dir"), ".mqtt/" + clientId);
+            if (!dir.exists() || !dir.isFile()) {
+                dir.mkdirs();
+            }
+            properties.store(new FileOutputStream(new File(dir, "/config.properties")), clientId + " connect config");
         } catch (IOException e) {
             logger.info("配置保存失败",e);
         }

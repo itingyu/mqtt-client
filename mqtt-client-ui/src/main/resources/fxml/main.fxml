@@ -5,8 +5,13 @@
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.*?>
-<BorderPane xmlns:fx="http://javafx.com/fxml/1" fx:id="borderPane" prefHeight="730" prefWidth="1100.0"
-            xmlns="http://javafx.com/javafx/8.0.171" fx:controller="com.canyue.mqtt.ui.controller.MainController">
+<?import java.net.URL?>
+<BorderPane xmlns:fx="http://javafx.com/fxml/1" prefHeight="730" prefWidth="1160.0"
+            xmlns="http://javafx.com/javafx/8.0.171" fx:controller="com.canyue.mqtt.ui.controller.MainController"
+            styleClass="">
+    <stylesheets>
+        <URL value="@/css/bootstrapfx.css"/>
+    </stylesheets>
     <fx:define>
         <ImageView fitWidth="800" fitHeight="700" fx:id="iv_bg">
             <Image url="@/img/iv_bg.png"/>
@@ -14,7 +19,7 @@
     </fx:define>
     <top>
         <HBox BorderPane.alignment="CENTER" prefHeight="30">
-            <Button onAction="#create" text="New"/>
+            <Button onAction="#create" text="New" styleClass=""/>
             <Button text="settings"/>
             <padding>
                 <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
@@ -23,7 +28,7 @@
     </top>
     <left>
         <VBox style="-fx-background-color:#dddddd">
-            <ListView fx:id="lvClient" prefHeight="700" prefWidth="300.0" BorderPane.alignment="CENTER">
+            <ListView fx:id="lvClient" prefHeight="700" prefWidth="360.0" BorderPane.alignment="CENTER">
             </ListView>
             <padding>
                 <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
@@ -31,6 +36,7 @@
         </VBox>
     </left>
     <center>
-        <fx:reference source="iv_bg"/>
+        <StackPane fx:id="stackPane">
+        </StackPane>
     </center>
 </BorderPane>

@@ -1,13 +1,10 @@
 package com.canyue.mqtt.ui.data;
 
-import com.canyue.mqtt.core.Message;
 import com.canyue.mqtt.core.client.impl.MqttClient;
 import com.canyue.mqtt.ui.config.ConnConfig;
+import com.canyue.mqtt.ui.controller.ClientController;
 import javafx.collections.ObservableList;
-import javafx.fxml.FXMLLoader;
 import javafx.scene.layout.VBox;
-
-import java.util.Map;
 
 
 /**
@@ -18,8 +15,8 @@ public class DataHolder {
     private ConnConfig connConfig;
     private boolean runStatus;
     private VBox clientVBox;
-    private FXMLLoader clientLoader;
-    private Map<String, ObservableList<Message>> map;
+    private ObservableList<TopicFilterData> filterDataList;
+    private ClientController clientController;
 
     public VBox getClientVBox() {
         return clientVBox;
@@ -27,14 +24,6 @@ public class DataHolder {
 
     public void setClientVBox(VBox clientVBox) {
         this.clientVBox = clientVBox;
-    }
-
-    public FXMLLoader getClientLoader() {
-        return clientLoader;
-    }
-
-    public void setClientLoader(FXMLLoader clientLoader) {
-        this.clientLoader = clientLoader;
     }
 
     public MqttClient getMqttClient() {
@@ -61,11 +50,19 @@ public class DataHolder {
         this.runStatus = runStatus;
     }
 
-    public Map<String, ObservableList<Message>> getMap() {
-        return map;
+    public ObservableList<TopicFilterData> getFilterDataList() {
+        return filterDataList;
     }
 
-    public void setMap(Map<String, ObservableList<Message>> map) {
-        this.map = map;
+    public void setFilterDataList(ObservableList<TopicFilterData> filterDataList) {
+        this.filterDataList = filterDataList;
+    }
+
+    public ClientController getClientController() {
+        return clientController;
+    }
+
+    public void setClientController(ClientController clientController) {
+        this.clientController = clientController;
     }
 }

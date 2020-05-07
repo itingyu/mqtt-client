@@ -2,22 +2,18 @@
 
 <?import javafx.scene.control.TabPane?>
 <?import javafx.scene.layout.VBox?>
-<?import java.net.URL?>
 <VBox xmlns:fx="http://javafx.com/fxml"
       xmlns="http://javafx.com/javafx"
       styleClass="green-theme"
       fx:controller="com.canyue.mqtt.ui.controller.ClientController"
       prefWidth="800"
       prefHeight="700">
-    <stylesheets>
-        <URL value="@/css/main.css"/>
-    </stylesheets>
     <children>
         <!--        50 800-->
         <fx:include source="conn.fxml" fx:id="conn"/>
         <TabPane id="tabPane" fx:id="tabPane" disable="true" focusTraversable="false" prefHeight="640.0" prefWidth="800"
-                 tabClosingPolicy="UNAVAILABLE"
-                 tabMaxHeight="40.0" tabMaxWidth="100.0" tabMinHeight="40.0" tabMinWidth="100.0" VBox.vgrow="ALWAYS">
+                 tabMaxHeight="40.0" tabMaxWidth="100.0" tabMinHeight="40.0" tabMinWidth="100.0" VBox.vgrow="ALWAYS"
+                 opacity="1">
             <!--            600 800-->
             <tabs>
                 <fx:include source="pub.fxml" fx:id="pub"/>

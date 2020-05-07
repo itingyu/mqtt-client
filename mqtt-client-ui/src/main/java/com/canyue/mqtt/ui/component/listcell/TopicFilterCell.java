@@ -1,45 +1,40 @@
 package com.canyue.mqtt.ui.component.listcell;
 
-import com.canyue.mqtt.core.Message;
-import com.canyue.mqtt.ui.controller.TopicFilterCellController;
-import javafx.collections.ObservableList;
+import com.canyue.mqtt.ui.component.listcell.cellcontroller.TopicFilterCellController;
+import com.canyue.mqtt.ui.data.DataHolder;
+import com.canyue.mqtt.ui.data.TopicFilterData;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.control.ListCell;
 
 import java.io.IOException;
-import java.util.Map;
 
 /**
  * @author: canyue
  * @Date: 2020/5/5 19:22
  */
-public class TopicFilterCell extends ListCell<String> {
+public class TopicFilterCell extends ListCell<TopicFilterData> {
     private final Node graphic;
     private final TopicFilterCellController topicFilterCellController;
-    private final Map<String, ObservableList<Message>> map;
+    private final DataHolder dataHolder;
 
-    public TopicFilterCell(Map<String, ObservableList<Message>> map) throws IOException {
-        this.map = map;
+    public TopicFilterCell(DataHolder dataHolder) throws IOException {
+        this.dataHolder = dataHolder;
         FXMLLoader loader = new FXMLLoader();
         graphic = loader.load(getClass().getClassLoader().getResourceAsStream("fxml/topicFilter_cell.fxml"));
         topicFilterCellController = loader.getController();
     }
 
     @Override
-    protected void updateItem(String topicFilter, boolean isEmpty) {
-        super.updateItem(topicFilter, isEmpty);
-        if (isEmpty || topicFilter == null) {
+    protected void updateItem(TopicFilterData topicFilterData, boolean isEmpty) {
+        super.updateItem(topicFilterData, isEmpty);
+        if (isEmpty || topicFilterData == null) {
             this.setGraphic(null);
         } else {
-            topicFilterCellController.setTopicFilter(topicFilter);
-            topicFilterCellController.setMessageList(map.get(topicFilter));
-            topicFilterCellController.init();
+            topicFilterCellController.setTopicFilterData(topicFilterData);
+            topicFilterCellController.setMqttClient(dataHolder.getMqttClient());
+            topicFilterCellController.initData();
             this.setGraphic(graphic);
         }
-    }
-
-    public TopicFilterCellController getTopicFilterCellController() {
-        return topicFilterCellController;
     }
 }

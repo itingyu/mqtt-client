@@ -1,6 +1,7 @@
 package com.canyue.mqtt.ui;
 
 import com.canyue.mqtt.ui.controller.MainController;
+import com.canyue.mqtt.ui.data.DataFactory;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.event.EventHandler;
@@ -22,20 +23,21 @@ public class App extends Application {
     }
 
     @Override
-    public void start(Stage primaryStage) throws Exception {
+    public void start(Stage mainStage) throws Exception {
         URL url = App.class.getClassLoader().getResource("fxml/main.fxml");
         FXMLLoader fxmlLoader = new FXMLLoader();
         fxmlLoader.setLocation(url);
         Scene scene = new Scene(fxmlLoader.load());
-        primaryStage.setScene(scene);
-        primaryStage.setTitle("MQTT客户端测试工具1.0");
-        primaryStage.getIcons().add(new Image("img/mqtt_icon.png"));
-        primaryStage.centerOnScreen();
-        primaryStage.setResizable(false);
-        primaryStage.show();
+        mainStage.setScene(scene);
+        mainStage.setTitle("MQTT客户端测试工具1.0");
+        mainStage.getIcons().add(new Image("img/mqtt_icon.png"));
+        mainStage.centerOnScreen();
+        mainStage.setResizable(false);
+        mainStage.show();
         MainController mainController = fxmlLoader.getController();
-        mainController.setMainStage(primaryStage);
-        primaryStage.setOnHidden(new EventHandler<WindowEvent>() {
+        //存储主舞台
+        DataFactory.setMainStage(mainStage);
+        mainStage.setOnHidden(new EventHandler<WindowEvent>() {
             @Override
             public void handle(WindowEvent event) {
                 mainController.close();

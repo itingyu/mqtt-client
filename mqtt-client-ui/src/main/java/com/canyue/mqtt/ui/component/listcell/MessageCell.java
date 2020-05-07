@@ -1,7 +1,7 @@
 package com.canyue.mqtt.ui.component.listcell;
 
 import com.canyue.mqtt.core.Message;
-import com.canyue.mqtt.ui.controller.MessageCellController;
+import com.canyue.mqtt.ui.component.listcell.cellcontroller.MessageCellController;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.control.ListCell;
